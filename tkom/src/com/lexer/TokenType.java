@@ -1,0 +1,41 @@
+package com.lexer;
+
+public enum TokenType { // UNARY_OP??? !COS
+    AND_OP,
+    OR_OP,
+    ASSIGNMENT_OP,
+    EQUAL_OP,
+    NOT_EQUAL_OP,
+    GREATER__OP,
+    SMALLER__OP,
+    GREATER_EQUAL_OP,
+    SMALLER_EQUAL_OP,
+    NEGATION_OP,
+    DIVISION_OP,
+
+    ADDITIVE_OP,
+
+    MULTIPLICATIVE_OP,
+    RIGHT_BRACKET,
+    LEFT_BRACKET,
+    RIGHT_SQ_BRACKET,
+    LEFT_SQ_BRACKET,
+    RIGHT_BRACE,
+    LEFT_BRACE,
+    SEMICOLON,
+    COMMA,
+    IF,
+    ELSE,
+    NAME,
+    FUNCTION,
+    RETURN,
+    WHILE,
+    VAR,
+    DEF,
+    PRINT,
+    UNIT,
+    NUMBER,
+    QUOTE,
+    EOF,
+    UNKNOWN
+}
