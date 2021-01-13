@@ -1,6 +1,6 @@
 package com.lexer;
 import java.io.FileNotFoundException;
-
+import java.io.File;
 
 public class Lexer {
 
@@ -13,11 +13,16 @@ public class Lexer {
     TokenDictionairy tokenDictionairy = new TokenDictionairy();
     int counter = 0;
 
-    public Lexer(String path, int i) throws FileNotFoundException {
-        if(i == 0)
-            cl = new CharLoader(path, i);
-        else
-            cl = new CharLoader(path);
+    public char peekNextCharacter() {
+        return nextCharacter;
+    }
+
+    public Lexer(File file) throws FileNotFoundException {
+            cl = new CharLoader(file);
+    }
+
+    public Lexer(String program) throws FileNotFoundException {
+            cl = new CharLoader(program);
     }
 
     public Token buildToken()

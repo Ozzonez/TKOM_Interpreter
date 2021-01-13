@@ -8,13 +8,12 @@ public class CharLoader {
     File text;
     Scanner scanner;
 
-    public CharLoader(String file) throws FileNotFoundException {
-        text = new File(file);
-        scanner = new Scanner(text);
+    public CharLoader(File file) throws FileNotFoundException {
+        scanner = new Scanner(file);
         scanner.useDelimiter("");
     }
 
-    public CharLoader(String message, int i)
+    public CharLoader(String message)
     {
         scanner = new Scanner(message);
         scanner.useDelimiter("");
