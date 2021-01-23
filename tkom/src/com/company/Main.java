@@ -38,7 +38,7 @@ public class Main {
                 System.out.println("XD");
         }
         catch(ParserException e){
-            System.out.println("XDDD nie dziala");
+            System.out.println(e.getMessage());
         }
     }
 }

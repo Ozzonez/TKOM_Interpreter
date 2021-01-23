@@ -1,5 +1,7 @@
 package com.parser;
 
+import com.interpreter.INodeVisitor;
+import com.interpreter.Interpreter;
 import com.lexer.Token;
 import java.util.ArrayList;
 
@@ -12,6 +14,11 @@ public class TreeNodeSub {
         }
         public void addFunction(TreeNode function){
             functions.add(function);
+        }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
         }
     }
 
@@ -26,6 +33,11 @@ public class TreeNodeSub {
             this.name = name;
             this.parameters = parameters;
             this.functionBlock = functionBlock;
+        }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
         }
 
         public Token getName() {
@@ -55,21 +67,14 @@ public class TreeNodeSub {
         public ArrayList<TreeNode> getParameters() {
             return parameters;
         }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
+        }
     }
 
-//    public static class Parameter implements  TreeNode{
-//        TreeNode expression;
-//
-//        public Parameter(TreeNode var) {
-//            this.expression = var;
-//        }
-//
-//        public TreeNode getExpression() {
-//            return expression;
-//        }
-//    }
-
-    public static class FunctionBlock implements  TreeNode {
+    public static class FunctionBlock implements TreeNode {
         ArrayList<TreeNode> statements;
 
         public FunctionBlock(ArrayList<TreeNode> statements) {
@@ -78,6 +83,11 @@ public class TreeNodeSub {
 
         public ArrayList<TreeNode> getStatements() {
             return statements;
+        }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
         }
     }
 
@@ -96,6 +106,11 @@ public class TreeNodeSub {
 
         public Token getName() {
             return name;
+        }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
         }
     }
 
@@ -121,6 +136,11 @@ public class TreeNodeSub {
         public TreeNode getInstructionBlockIfFalse() {
             return instructionBlockIfFalse;
         }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
+        }
     }
 
     public static class WhileStatement implements  TreeNode{
@@ -138,6 +158,11 @@ public class TreeNodeSub {
 
         public TreeNode getWhileBody() {
             return whileBody;
+        }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
         }
     }
 
@@ -163,6 +188,11 @@ public class TreeNodeSub {
         public TreeNode getRightExp() {
             return rightExp;
         }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
+        }
     }
 
     public static class BinOperator implements TreeNode{
@@ -187,6 +217,11 @@ public class TreeNodeSub {
         public TreeNode getRightExp() {
             return rightExp;
         }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
+        }
     }
 
     public static class AssignStatement implements TreeNode{
@@ -205,6 +240,11 @@ public class TreeNodeSub {
 
         public TreeNode getValue() {
             return value;
+        }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
         }
     }
 
@@ -225,6 +265,11 @@ public class TreeNodeSub {
         public TreeNode getValue() {
             return value;
         }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
+        }
     }
 
     public static class ReturnStatement implements TreeNode{
@@ -237,6 +282,11 @@ public class TreeNodeSub {
 
         public TreeNode getReturned() {
             return returned;
+        }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
         }
     }
 
@@ -251,11 +301,16 @@ public class TreeNodeSub {
         public TreeNode getContent() {
             return content;
         }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
+        }
     }
 
     public static class Unit implements TreeNode{
-        Token value;
-        Token unitType;
+        Token value; //todo trzeba jakoś sprawdzać czy dobra wartośc czyli tylko int albo double
+        Token unitType; //todo TU MUSI BYĆ TREENODE ŻEBY TO BYŁ UNITBASIC TYPE ALBO COMPLEXTYPE basic type może być tokenem
 
         public Unit(Token value, Token unitType)
         {
@@ -270,11 +325,17 @@ public class TreeNodeSub {
         public Token getUnitType() {
             return unitType;
         }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
+        }
     }
 
     public static class Variable implements TreeNode{
         Token name;
         //String value;
+        TreeNode value; //zmieniono na TreeNode z Token
 
         public Variable(Token name)
         {
@@ -283,6 +344,11 @@ public class TreeNodeSub {
 
         public Token getName() {
             return name;
+        }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
         }
     }
 
@@ -297,6 +363,11 @@ public class TreeNodeSub {
         public Token getValue() {
             return value;
         }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
+        }
     }
 
     public static class StringVar implements TreeNode{
@@ -310,6 +381,11 @@ public class TreeNodeSub {
         public Token getValue() {
             return value;
         }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
+        }
     }
 
     public static class UnitBasicType implements TreeNode{
@@ -322,6 +398,11 @@ public class TreeNodeSub {
 
         public Token getName() {
             return name;
+        }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
         }
     }
 
@@ -341,6 +422,11 @@ public class TreeNodeSub {
 
         public TreeNode getFormula() {
             return formula;
+        }
+
+        public void accept(Interpreter visitor)
+        {
+            visitor.visit(this);
         }
     }
 }

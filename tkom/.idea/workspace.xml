@@ -2,22 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0d34770b-83ff-4495-84a2-3d7b382d469e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/com/parser/Parser.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/parser/ParserException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/parser/TreeNode.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/parser/TreeNodeSub.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/tests/ParserTests.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/com/interpreter/CallContext.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/com/interpreter/Environment.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/com/interpreter/INodeVisitor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/com/interpreter/Interpreter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/com/interpreter/InterpreterException.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/tkom/Program.txt" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/tkom/Program.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/tkom/com/company/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/tkom/com/company/Main.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/tkom/com/lexer/CharLoader.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/tkom/com/lexer/CharLoader.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/tkom/com/lexer/Lexer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/tkom/com/lexer/Lexer.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/tkom/com/tests/LexerTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/tkom/com/tests/LexerTest.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Program.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/Program.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/com/company/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/company/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/lexer/CharLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/lexer/CharLoader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/lexer/Lexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/lexer/Lexer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/tests/LexerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/tests/LexerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/parser/TreeNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/parser/TreeNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/parser/TreeNodeSub.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/parser/TreeNodeSub.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,6 +24,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="JUnit5 Test Class" />
+        <option value="Interface" />
         <option value="Class" />
       </list>
     </option>
@@ -60,7 +57,20 @@
       <recent name="" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.ParserTests">
+  <component name="RunManager" selected="Application.Main">
+    <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.company.Main" />
+      <module name="tkom" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.company.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="ParserTests" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="tkom" />
       <extension name="coverage">
@@ -87,22 +97,6 @@
       <option name="PACKAGE_NAME" value="com.tests" />
       <option name="MAIN_CLASS_NAME" value="com.tests.ParserTests" />
       <option name="METHOD_NAME" value="checkAssignmentValue" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ParserTests.checkExpression" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="tkom" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.tests.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="com.tests" />
-      <option name="MAIN_CLASS_NAME" value="com.tests.ParserTests" />
-      <option name="METHOD_NAME" value="checkExpression" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -142,11 +136,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.Main" />
         <item itemvalue="JUnit.ParserTests" />
         <item itemvalue="JUnit.ParserTests.checkFunctionDefArgs" />
         <item itemvalue="JUnit.ParserTests.checkFuncCallArgs" />
         <item itemvalue="JUnit.ParserTests.checkAssignmentValue" />
-        <item itemvalue="JUnit.ParserTests.checkExpression" />
       </list>
     </recent_temporary>
   </component>
@@ -180,11 +174,11 @@
       <screen x="-1920" y="125" width="1920" height="1040" />
     </state>
     <state x="-1363" y="296" key="#LexerTest.ifTest/0.0.1920.1160/-1920.125.1920.1040@-1920.125.1920.1040" timestamp="1607289066992" />
-    <state x="765" y="247" key="#com.intellij.ide.util.MemberChooser" timestamp="1610485395333">
+    <state x="765" y="247" key="#com.intellij.ide.util.MemberChooser" timestamp="1611434315290">
       <screen x="0" y="0" width="1920" height="1160" />
     </state>
     <state x="-1155" y="346" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1160/-1920.125.1920.1040@-1920.125.1920.1040" timestamp="1607197256547" />
-    <state x="765" y="247" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1610485395333" />
+    <state x="765" y="247" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1611434315290" />
     <state x="-1387" y="125" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1607266030398">
       <screen x="-1920" y="125" width="1920" height="1040" />
     </state>
@@ -193,50 +187,51 @@
       <screen x="-1920" y="125" width="1920" height="1040" />
     </state>
     <state x="-1181" y="387" key="FileChooserDialogImpl/0.0.1920.1160/-1920.125.1920.1040@-1920.125.1920.1040" timestamp="1610293967002" />
-    <state width="1921" height="179" key="GridCell.Tab.0.bottom" timestamp="1610515126257">
+    <state width="1921" height="172" key="GridCell.Tab.0.bottom" timestamp="1611439183482">
       <screen x="0" y="0" width="1920" height="1160" />
     </state>
     <state width="1877" height="182" key="GridCell.Tab.0.bottom/0.0.1920.1160/-1920.125.1920.1040@-1920.125.1920.1040" timestamp="1607302906723" />
-    <state width="1921" height="179" key="GridCell.Tab.0.bottom/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1610515126257" />
-    <state width="1921" height="179" key="GridCell.Tab.0.center" timestamp="1610515126257">
+    <state width="1921" height="172" key="GridCell.Tab.0.bottom/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1611439183482" />
+    <state width="1921" height="172" key="GridCell.Tab.0.center" timestamp="1611439183482">
       <screen x="0" y="0" width="1920" height="1160" />
     </state>
     <state width="1877" height="182" key="GridCell.Tab.0.center/0.0.1920.1160/-1920.125.1920.1040@-1920.125.1920.1040" timestamp="1607302906723" />
-    <state width="1921" height="179" key="GridCell.Tab.0.center/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1610515126257" />
-    <state width="1921" height="179" key="GridCell.Tab.0.left" timestamp="1610515126257">
+    <state width="1921" height="172" key="GridCell.Tab.0.center/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1611439183482" />
+    <state width="1921" height="172" key="GridCell.Tab.0.left" timestamp="1611439183482">
       <screen x="0" y="0" width="1920" height="1160" />
     </state>
     <state width="1877" height="182" key="GridCell.Tab.0.left/0.0.1920.1160/-1920.125.1920.1040@-1920.125.1920.1040" timestamp="1607302906723" />
-    <state width="1921" height="179" key="GridCell.Tab.0.left/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1610515126257" />
-    <state width="1921" height="179" key="GridCell.Tab.0.right" timestamp="1610515126257">
+    <state width="1921" height="172" key="GridCell.Tab.0.left/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1611439183482" />
+    <state width="1921" height="172" key="GridCell.Tab.0.right" timestamp="1611439183482">
       <screen x="0" y="0" width="1920" height="1160" />
     </state>
     <state width="1877" height="182" key="GridCell.Tab.0.right/0.0.1920.1160/-1920.125.1920.1040@-1920.125.1920.1040" timestamp="1607302906723" />
-    <state width="1921" height="179" key="GridCell.Tab.0.right/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1610515126257" />
-    <state width="1921" height="179" key="GridCell.Tab.1.bottom" timestamp="1610515126258">
+    <state width="1921" height="172" key="GridCell.Tab.0.right/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1611439183482" />
+    <state width="1921" height="119" key="GridCell.Tab.1.bottom" timestamp="1610718619844">
       <screen x="0" y="0" width="1920" height="1160" />
     </state>
     <state width="1877" height="348" key="GridCell.Tab.1.bottom/0.0.1920.1160/-1920.125.1920.1040@-1920.125.1920.1040" timestamp="1607302213377" />
-    <state width="1921" height="179" key="GridCell.Tab.1.bottom/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1610515126258" />
-    <state width="1921" height="179" key="GridCell.Tab.1.center" timestamp="1610515126257">
+    <state width="1921" height="119" key="GridCell.Tab.1.bottom/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1610718619844" />
+    <state width="1921" height="119" key="GridCell.Tab.1.center" timestamp="1610718619844">
       <screen x="0" y="0" width="1920" height="1160" />
     </state>
     <state width="1877" height="348" key="GridCell.Tab.1.center/0.0.1920.1160/-1920.125.1920.1040@-1920.125.1920.1040" timestamp="1607302213376" />
-    <state width="1921" height="179" key="GridCell.Tab.1.center/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1610515126257" />
-    <state width="1921" height="179" key="GridCell.Tab.1.left" timestamp="1610515126257">
+    <state width="1921" height="119" key="GridCell.Tab.1.center/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1610718619844" />
+    <state width="1921" height="119" key="GridCell.Tab.1.left" timestamp="1610718619843">
       <screen x="0" y="0" width="1920" height="1160" />
     </state>
     <state width="1877" height="348" key="GridCell.Tab.1.left/0.0.1920.1160/-1920.125.1920.1040@-1920.125.1920.1040" timestamp="1607302213376" />
-    <state width="1921" height="179" key="GridCell.Tab.1.left/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1610515126257" />
-    <state width="1921" height="179" key="GridCell.Tab.1.right" timestamp="1610515126257">
+    <state width="1921" height="119" key="GridCell.Tab.1.left/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1610718619843" />
+    <state width="1921" height="119" key="GridCell.Tab.1.right" timestamp="1610718619844">
       <screen x="0" y="0" width="1920" height="1160" />
     </state>
     <state width="1877" height="348" key="GridCell.Tab.1.right/0.0.1920.1160/-1920.125.1920.1040@-1920.125.1920.1040" timestamp="1607302213377" />
-    <state width="1921" height="179" key="GridCell.Tab.1.right/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1610515126257" />
-    <state x="-1264" y="469" key="com.intellij.ide.util.TipDialog" timestamp="1610368079804">
-      <screen x="-1920" y="125" width="1920" height="1040" />
+    <state width="1921" height="119" key="GridCell.Tab.1.right/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1610718619844" />
+    <state x="656" y="384" key="com.intellij.ide.util.TipDialog" timestamp="1611410465260">
+      <screen x="0" y="0" width="1920" height="1160" />
     </state>
     <state x="-1264" y="469" key="com.intellij.ide.util.TipDialog/0.0.1920.1160/-1920.125.1920.1040@-1920.125.1920.1040" timestamp="1610368079804" />
+    <state x="656" y="384" key="com.intellij.ide.util.TipDialog/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1611410465260" />
     <state x="-1255" y="538" key="com.intellij.jarRepository.RepositoryAttachDialog-DOWNLOAD" timestamp="1607286264679">
       <screen x="-1920" y="125" width="1920" height="1040" />
     </state>

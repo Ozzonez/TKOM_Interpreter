@@ -1,19 +1,9 @@
 function foo (param1, param2)
 {
-    foo2(arg1);
-    x = 20;
-    var variable;
-    if(x > 10)
+    if((2<x) == y)
     {
-        x = x + 1;
+        x = (x + 10);
     };
-    while((i <= 100) && ( x == 3))
-    {
-        x = (x - 10) + 5 * 2;
-    };
-    return variable;
-    print(x + 2);
-    def unit kg;
-    def newton kg*m/s*s;
+
 }
 
