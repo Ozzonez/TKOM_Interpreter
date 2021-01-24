@@ -38,12 +38,31 @@ public class Environment {
     {
         callStack.pop();
     }
+
+    // to musza dodawać wszystkie functionBlocki
     public void addVarContext()
     {
         assert callStack.peek() != null;
-        callStack.peek().addLocalVarContext();
+        callStack.peek().addVarContext();
     }
 
+    public void deleteVarContext()
+    {
+        assert callStack.peek() != null;
+        callStack.peek().deleteVarContext();
+    }
+
+    // sprawdza czy istnieje i nadpisywać jeśli znalazła oraz rzucać błąd jeśli nie znalazła
+    public void updateVarInCurrentBlockContext(TreeNode name, TreeNode value) throws InterpreterException {
+        assert callStack.peek() != null;
+        callStack.peek().updateVarInBlockContext(name, value);
+    }
+
+    //dodaj nową zmienną (z wartością lub nullem) do var contextu aktualnego -- widoczna tylko w aktualnej mapie i niższych pochodnych
+    public void declareVarInCurrentScope(TreeNode name, TreeNode value) throws InterpreterException {
+        assert callStack.peek() != null;
+        callStack.peek().declareVarInCurrentScope(name, value);
+    }
 
 
     //todo getVariable(name)

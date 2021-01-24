@@ -2,6 +2,7 @@ package com.parser;
 
 import com.interpreter.INodeVisitor;
 import com.interpreter.Interpreter;
+import com.interpreter.InterpreterException;
 import com.lexer.Token;
 import java.util.ArrayList;
 
@@ -137,8 +138,7 @@ public class TreeNodeSub {
             return instructionBlockIfFalse;
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
     }
@@ -160,8 +160,7 @@ public class TreeNodeSub {
             return whileBody;
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
     }
@@ -189,8 +188,7 @@ public class TreeNodeSub {
             return rightExp;
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
     }
@@ -218,8 +216,7 @@ public class TreeNodeSub {
             return rightExp;
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
     }
@@ -242,8 +239,7 @@ public class TreeNodeSub {
             return value;
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
     }
@@ -266,8 +262,7 @@ public class TreeNodeSub {
             return value;
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
     }
@@ -302,8 +297,7 @@ public class TreeNodeSub {
             return content;
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
     }
@@ -344,6 +338,10 @@ public class TreeNodeSub {
 
         public Token getName() {
             return name;
+        }
+
+        public void setValue(TreeNode value) {
+            this.value = value;
         }
 
         public void accept(Interpreter visitor)
@@ -400,8 +398,7 @@ public class TreeNodeSub {
             return name;
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
     }
@@ -424,8 +421,7 @@ public class TreeNodeSub {
             return formula;
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
     }

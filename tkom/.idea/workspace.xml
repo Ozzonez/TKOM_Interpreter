@@ -2,16 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0d34770b-83ff-4495-84a2-3d7b382d469e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/com/interpreter/CallContext.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/interpreter/Environment.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/interpreter/INodeVisitor.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/interpreter/Interpreter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/interpreter/InterpreterException.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/tkom/Program.txt" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/tkom/Program.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/tkom/com/company/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/tkom/com/company/Main.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Program.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/Program.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/company/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/company/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/interpreter/CallContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/interpreter/CallContext.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/interpreter/Environment.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/interpreter/Environment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/interpreter/Interpreter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/interpreter/Interpreter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/com/parser/TreeNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/parser/TreeNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/com/parser/TreeNodeSub.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/parser/TreeNodeSub.java" afterDir="false" />
     </list>
@@ -174,11 +168,11 @@
       <screen x="-1920" y="125" width="1920" height="1040" />
     </state>
     <state x="-1363" y="296" key="#LexerTest.ifTest/0.0.1920.1160/-1920.125.1920.1040@-1920.125.1920.1040" timestamp="1607289066992" />
-    <state x="765" y="247" key="#com.intellij.ide.util.MemberChooser" timestamp="1611434315290">
+    <state x="765" y="247" key="#com.intellij.ide.util.MemberChooser" timestamp="1611443232226">
       <screen x="0" y="0" width="1920" height="1160" />
     </state>
     <state x="-1155" y="346" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1160/-1920.125.1920.1040@-1920.125.1920.1040" timestamp="1607197256547" />
-    <state x="765" y="247" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1611434315290" />
+    <state x="765" y="247" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1160/-1920.125.1920.1040@0.0.1920.1160" timestamp="1611443232226" />
     <state x="-1387" y="125" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1607266030398">
       <screen x="-1920" y="125" width="1920" height="1040" />
     </state>
