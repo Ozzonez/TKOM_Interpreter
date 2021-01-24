@@ -1,9 +1,8 @@
-function foo (param1, param2)
+function main()
 {
-    if((2<x) == y)
-    {
-        x = (x + 10);
-    };
+    var x = 5;
+    x = (x + 10);
 
+    return x;
 }
 

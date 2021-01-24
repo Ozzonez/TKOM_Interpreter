@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 public class CallContext {
     //HashMap<TokenType, TreeNodeSub.Variable> variables = new HashMap<TokenType, TreeNodeSub.Variable>(); // zmienna - token Name + obiekt typu Variable
-    ArrayList<HashMap<String, TreeNodeSub.Variable>> localVariablesStack = new ArrayList<>(); // ewentualnie mapa variables może być na szczycie tego stosu
+    ArrayList<HashMap<String, TreeNode>> localVariablesStack = new ArrayList<>(); // ewentualnie mapa variables może być na szczycie tego stosu
     //todo do arrayLista dodawać Token czy po prostu nazwę variable czyli Token x.getContent()
     //pojedynczy rekord na stosie to mapa variabli w tym scopie
     //czy potrzebne jeszcze pola typu token name, ActivationType typ - loop, if, program, itp
@@ -20,7 +20,7 @@ public class CallContext {
 
     public void addVarContext()
     {
-        HashMap<String, TreeNodeSub.Variable> newVarContext = new HashMap<String, TreeNodeSub.Variable>();
+        HashMap<String, TreeNode> newVarContext = new HashMap<String, TreeNode>();
         localVariablesStack.add(newVarContext);
     }
 
@@ -29,28 +29,39 @@ public class CallContext {
         localVariablesStack.remove(localVariablesStack.size() - 1);
     }
 
-    //todo oooooooooooo co chodzi
-    public void addVariable(TreeNode var)
-    {
-        TreeNodeSub.Variable x = (TreeNodeSub.Variable)var;
-        localVariablesStack.get(localVariablesStack.size() - 1).put(x.getName().getContent(), (TreeNodeSub.Variable)var);
-    }
-
+    // value - num, stringvar, unit | name to Variable - wyciągnąć z niego variable.getName.getcontent -- kiedy aktualizujemy wartość var, zmieniamy wskazanie jego pola value na nowy obiekt num, string lub unit
     public void updateVarInBlockContext(TreeNode name, TreeNode value) throws InterpreterException {
-        TreeNodeSub.Variable tmp = null; // wskazanie na variable
+        TreeNode tmp = null; // wskazanie na variable
         for(int i = 1; i <= localVariablesStack.size(); i++) {
             if ((tmp = localVariablesStack.get(localVariablesStack.size() - i).get(((TreeNodeSub.Variable) (name)).getName().getContent())) != null) {
+                localVariablesStack.get(localVariablesStack.size() - i).replace(((TreeNodeSub.Variable) (name)).getName().getContent(), value);
                 break;
             }
         }
         if(tmp == null) throw new InterpreterException("Variable is not declared in this scope");
-
-        tmp.setValue(value);
     }
 
-    //dodać ją po prostu do najnowszej mapy - ostatnia na liście
+    //todo MAP< STRING , NUM ABLO STRING ALBO UNIT > TO JEST KLASA VARIABLE CZYLI DO
     public void declareVarInCurrentScope(TreeNode name, TreeNode value) throws InterpreterException {
-        localVariablesStack.get(localVariablesStack.size() - 1).put(((TreeNodeSub.Variable)name).getName().getContent(), (TreeNodeSub.Variable)value);
+        TreeNode tmp;
+//        if(value instanceof TreeNodeSub.StringVar)
+//            tmp = (TreeNodeSub.StringVar)value;
+//        else if(value instanceof TreeNodeSub.Num)
+//            tmp = (TreeNodeSub.Num)value;
+//        else if(value instanceof TreeNodeSub.Unit)
+//            tmp = (TreeNodeSub.Unit)value; sprawdzanie na tym etapie chyba niepotrzebne
+
+        localVariablesStack.get(localVariablesStack.size() - 1).put(((TreeNodeSub.Variable)name).getName().getContent(), value);
+    }
+
+    public TreeNode getVarValue(TreeNode name) throws InterpreterException {
+        TreeNode tmp = null; // wskazanie na variable
+        for(int i = 1; i <= localVariablesStack.size(); i++) {
+            if ((tmp = localVariablesStack.get(localVariablesStack.size() - i).get(((TreeNodeSub.Variable) (name)).getName().getContent())) != null) {
+                return tmp;
+            }
+        }
+        throw new InterpreterException("Variable is not declared in this scope");
     }
 
 }

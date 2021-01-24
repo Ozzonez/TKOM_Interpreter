@@ -1,86 +1,116 @@
 package com.tests;
 
 import com.lexer.Lexer;
+import com.lexer.LexerException;
 import com.lexer.Token;
 import com.lexer.TokenType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class LexerTest {
     @Test
-    void decimalFractionsTests() throws Exception {
-        Lexer lexer = new Lexer(".2 0.2 0.234 0.a a.0 0.23a 00.3 23434.23123");
+    void exceptionsDot() throws Exception, LexerException {
+        Lexer lexer = new Lexer(".2");
+        Exception exception = assertThrows(LexerException.class, lexer::buildToken);
+        assertEquals("Unknown token", exception.getMessage());
+    }
+
+    @Test
+    void exceptionsNumDotSign() throws Exception, LexerException {
+        Lexer lexer = new Lexer("0.a");
+        Exception exception = assertThrows(LexerException.class, lexer::buildToken);
+        assertEquals("Unknown token", exception.getMessage());
+    }
+
+    @Test
+    void exceptionsSignDotNum() throws Exception, LexerException {
+        Lexer lexer = new Lexer("a.0");
         Token token = lexer.buildToken();
-        assertEquals(token.getType(), TokenType.UNKNOWN);
-        assertEquals(".", token.getContent());
+
+        assertEquals(token.getType(), TokenType.NAME);
+        assertEquals("a", token.getContent());
+
+        Exception exception = assertThrows(LexerException.class, lexer::buildToken);
+        assertEquals("Unknown token", exception.getMessage());
+    }
+
+    @Test
+    void exceptionsUnknownSign() throws Exception {
+        Lexer lexer = new Lexer("fu?nc");
+        Token token = lexer.buildToken();
+
+        assertEquals(token.getType(), TokenType.NAME);
+        assertEquals("fu", token.getContent());
+
+        Exception exception = assertThrows(LexerException.class, lexer::buildToken);
+        assertEquals("Unknown token", exception.getMessage());
+    }
+
+    //todo testy na nielegalne pojedyncze znaki
+//    //        assertEquals(TokenType.UNKNOWN, token.getType());
+////        assertEquals("|", token.getContent());
+//    token = lexer.buildToken();
+//    assertEquals(TokenType.ASSIGNMENT_OP, token.getType());
+//    assertEquals("=", token.getContent());
+//    token = lexer.buildToken();
+//    assertEquals(TokenType.NEGATION_OP, token.getType());
+//    assertEquals("!", token.getContent());
+//    token = lexer.buildToken();
+////        assertEquals(TokenType.UNKNOWN, token.getType());
+////        assertEquals("&", token.getContent());
+
+    @Test
+    void decimalFractionsTests() throws Exception {
+        Lexer lexer = new Lexer("2 0.2 0.234 0.23a 00.3 23434.23123");
+        Token token = lexer.buildToken();
+
+        assertEquals(token.getType(), TokenType.NUMBER);
+        assertEquals(2, token.getNumcontent());
         token = lexer.buildToken();
 
         assertEquals(token.getType(), TokenType.NUMBER);
-        assertEquals("2", token.getContent());
+        assertEquals(0.2, token.getNumcontent());
         token = lexer.buildToken();
 
         assertEquals(token.getType(), TokenType.NUMBER);
-        assertEquals("0.2", token.getContent());
+        assertEquals(0.234, token.getNumcontent());
         token = lexer.buildToken();
 
         assertEquals(token.getType(), TokenType.NUMBER);
-        assertEquals("0.234", token.getContent());
-        token = lexer.buildToken();
-
-        assertEquals(token.getType(), TokenType.UNKNOWN);
-        assertEquals("0.", token.getContent());
+        assertEquals(0.23, token.getNumcontent());
         token = lexer.buildToken();
 
         assertEquals(token.getType(), TokenType.NAME);
         assertEquals("a", token.getContent());
         token = lexer.buildToken();
 
-        assertEquals(token.getType(), TokenType.NAME);
-        assertEquals("a", token.getContent());
-        token = lexer.buildToken();
-
-        assertEquals(token.getType(), TokenType.UNKNOWN);
-        assertEquals(".", token.getContent());
+        assertEquals(token.getType(), TokenType.NUMBER);
+        assertEquals(0, token.getNumcontent());
         token = lexer.buildToken();
 
         assertEquals(token.getType(), TokenType.NUMBER);
-        assertEquals("0", token.getContent());
+        assertEquals(0.3, token.getNumcontent());
         token = lexer.buildToken();
 
         assertEquals(token.getType(), TokenType.NUMBER);
-        assertEquals("0.23", token.getContent());
-        token = lexer.buildToken();
-
-        assertEquals(token.getType(), TokenType.NAME);
-        assertEquals("a", token.getContent());
-        token = lexer.buildToken();
-
-        assertEquals(token.getType(), TokenType.NUMBER);
-        assertEquals("0", token.getContent());
-        token = lexer.buildToken();
-
-        assertEquals(token.getType(), TokenType.NUMBER);
-        assertEquals("0.3", token.getContent());
-        token = lexer.buildToken();
-
-        assertEquals(token.getType(), TokenType.NUMBER);
-        assertEquals("23434.23123", token.getContent());
+        assertEquals(23434.23123, token.getNumcontent());
     }
     @Test
     void numbersAndNames() throws Exception {
-        Lexer lexer = new Lexer("0023 func2 2func 4532 fu?nc fu!nc ");
+        Lexer lexer = new Lexer("0023 func2 2func 4532 func fu!nc ");
         Token token = lexer.buildToken();
         assertEquals(token.getType(), TokenType.NUMBER);
-        assertEquals("0", token.getContent());
+        assertEquals(0, token.getNumcontent());
         token = lexer.buildToken();
 
         assertEquals(token.getType(), TokenType.NUMBER);
-        assertEquals("0", token.getContent());
+        assertEquals(0, token.getNumcontent());
         token = lexer.buildToken();
 
         assertEquals(token.getType(), TokenType.NUMBER);
-        assertEquals("23", token.getContent());
+        assertEquals(23, token.getNumcontent());
         token = lexer.buildToken();
 
         assertEquals(token.getType(), TokenType.NAME);
@@ -88,7 +118,7 @@ class LexerTest {
         token = lexer.buildToken();
 
         assertEquals(token.getType(), TokenType.NUMBER);
-        assertEquals("2", token.getContent());
+        assertEquals(2, token.getNumcontent());
         token = lexer.buildToken();
 
         assertEquals(token.getType(), TokenType.NAME);
@@ -96,19 +126,11 @@ class LexerTest {
         token = lexer.buildToken();
 
         assertEquals(token.getType(), TokenType.NUMBER);
-        assertEquals("4532", token.getContent());
+        assertEquals(4532, token.getNumcontent());
         token = lexer.buildToken();
 
         assertEquals(token.getType(), TokenType.NAME);
-        assertEquals("fu", token.getContent());
-        token = lexer.buildToken();
-
-        assertEquals(token.getType(), TokenType.UNKNOWN);
-        assertEquals("?", token.getContent());
-        token = lexer.buildToken();
-
-        assertEquals(token.getType(), TokenType.NAME);
-        assertEquals("nc", token.getContent());
+        assertEquals("func", token.getContent());
         token = lexer.buildToken();
 
         assertEquals(token.getType(), TokenType.NAME);
@@ -196,7 +218,7 @@ class LexerTest {
 
     @Test
     void singleSymbols() throws Exception {
-        Lexer lexer = new Lexer("*/[}+-(){];,><|=!&");
+        Lexer lexer = new Lexer("*/[}+-(){];,><a=!");
         Token token = lexer.buildToken();
         assertEquals(TokenType.MULTIPLICATIVE_OP, token.getType());
         assertEquals("*", token.getContent());
@@ -240,17 +262,12 @@ class LexerTest {
         assertEquals(TokenType.SMALLER__OP, token.getType());
         assertEquals("<", token.getContent());
         token = lexer.buildToken();
-        assertEquals(TokenType.UNKNOWN, token.getType());
-        assertEquals("|", token.getContent());
         token = lexer.buildToken();
         assertEquals(TokenType.ASSIGNMENT_OP, token.getType());
         assertEquals("=", token.getContent());
         token = lexer.buildToken();
         assertEquals(TokenType.NEGATION_OP, token.getType());
         assertEquals("!", token.getContent());
-        token = lexer.buildToken();
-        assertEquals(TokenType.UNKNOWN, token.getType());
-        assertEquals("&", token.getContent());
     }
     @Test
     void doubleSymbols() throws Exception {
@@ -298,9 +315,8 @@ class LexerTest {
         assertEquals("\"test test \"", token.getContent());
 
         Lexer lexer2 = new Lexer("\"test test \r \n test");
-        Token token2 = lexer2.buildToken();
-        assertEquals(TokenType.UNKNOWN, token2.getType());
-        assertEquals("\"test test ", token2.getContent());
+        Exception exception = assertThrows(LexerException.class, lexer2::buildToken);
+        assertEquals("Illegal line end is string literal", exception.getMessage());
     }
     @Test
     void comments() throws Exception {

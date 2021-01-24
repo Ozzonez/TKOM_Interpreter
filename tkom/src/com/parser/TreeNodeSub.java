@@ -17,8 +17,7 @@ public class TreeNodeSub {
             functions.add(function);
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
     }
@@ -36,8 +35,7 @@ public class TreeNodeSub {
             this.functionBlock = functionBlock;
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
 
@@ -86,8 +84,7 @@ public class TreeNodeSub {
             return statements;
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
     }
@@ -109,8 +106,7 @@ public class TreeNodeSub {
             return name;
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
     }
@@ -279,8 +275,7 @@ public class TreeNodeSub {
             return returned;
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
     }
@@ -340,12 +335,15 @@ public class TreeNodeSub {
             return name;
         }
 
+        public TreeNode getValue() {
+            return value;
+        }
+
         public void setValue(TreeNode value) {
             this.value = value;
         }
 
-        public void accept(Interpreter visitor)
-        {
+        public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
     }

@@ -25,8 +25,7 @@ public class Lexer {
             cl = new CharLoader(program);
     }
 
-    public Token buildToken()
-    {
+    public Token buildToken() throws LexerException {
         if(nextCharacter != '\0') // updating character with nextCharacter var - moving one character forwards
         {
             character = nextCharacter;
@@ -83,11 +82,10 @@ public class Lexer {
         else if(Character.isLetter(character))
             return readKeyWordOrName();
 
-        return new Token(TokenType.UNKNOWN, Character.toString(character), x, y);
+        throw new LexerException("Unknown token"); //todo dodaj info o x i y do błędu
     }
 
-    public Token commentSymbol()
-    {
+    public Token commentSymbol() throws LexerException {
         String word = "";
         word = word + character;
         nextCharacter = cl.getNextSymbol();
@@ -123,8 +121,7 @@ public class Lexer {
         return new Token(tokenDictionairy.getPrefixDoubleSymbol(character), Character.toString(character), ++x, y);
     }
 
-    public Token quotationTokenIterator()
-    {
+    public Token quotationTokenIterator() throws LexerException {
         String word = "";
         TokenType tmp;
 
@@ -148,14 +145,13 @@ public class Lexer {
         {
             x = x + word.length();
             nextCharacter = character;
-            tmp = TokenType.UNKNOWN;
+            throw new LexerException("Illegal line end is string literal"); //todo dodaj info o x i y do błędu
         }
 
         return new Token(tmp, word, x, y);
     }
 
-    public Token zeroTokenIterator()
-    {
+    public Token zeroTokenIterator() throws LexerException {
         String word = "";
         TokenType tmp;
 
@@ -172,22 +168,23 @@ public class Lexer {
                 character = cl.getNextSymbol();
             }
             if(word.equals("0."))
-                tmp = TokenType.UNKNOWN;
+                throw new LexerException("Unknown token"); //todo dodaj info o x i y do błędu
         }
         else // token == 0
         {
             x = x + word.length();
             nextCharacter = character;
-            return new Token(tmp, word, x, y);
+            double value = Double.parseDouble(word);
+            return new Token(tmp, value, x, y);
         }
         // double type token detected
         x = x + word.length();
         nextCharacter = character;
-        return new Token(tmp, word, x, y);
+        double value = Double.parseDouble(word);
+        return new Token(tmp, value, x, y);
     }
 
-    public Token digitTokenIterator()
-    {
+    public Token digitTokenIterator() throws LexerException {
         String word = "";
         TokenType tmp;
         int counter = 0;
@@ -210,11 +207,12 @@ public class Lexer {
             }
 
             if(counter == 0)
-                tmp = TokenType.UNKNOWN;
+                throw new LexerException("Unknown token"); //todo dodaj info o x i y do błędu
         }
         x = x + word.length();
         nextCharacter = character;
-        return new Token(tmp, word, x, y);
+        double value = Double.parseDouble(word);
+        return new Token(tmp, value, x, y);
     }
 
     public Token readKeyWordOrName()

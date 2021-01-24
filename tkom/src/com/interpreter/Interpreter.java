@@ -5,52 +5,90 @@ import com.lexer.TokenType;
 import com.parser.TreeNode;
 import com.parser.TreeNodeSub;
 
+import java.util.ArrayList;
+
 public class Interpreter{
     Environment env;
+    TreeNode program;
 
-    public void getFunc(String name) throws InterpreterException {
-        TreeNode temporaryFunctionDef = new TreeNodeSub.Variable(TokenNode );
-        //todo implement searching
-        if(not found) throw new InterpreterException("Function not declared!");
-        //return temporaryFunctionDef; //todo TUTAJ JAKIŚ TEGES SZMEGES
+    public Interpreter(TreeNode program)
+    {
+        this.program = program;
     }
 
-    public void visit(TreeNode x) // przeciazony visit - usunac na koniec
-    {
-
+    public Object run() throws InterpreterException {
+        program.accept(this);
+        return env.getLastResult();
     }
 
-    public void visit(TreeNodeSub.Program program)
-    {
+    public TreeNode getFunc(String name) throws InterpreterException {
+        for(TreeNode i : env.getFuncDefs())
+        {
+            if(((TreeNodeSub.FunctionDef) i).getName().getContent().equals(name))
+                return i;
+        }
+       throw new InterpreterException("Function not declared!");
+    }
+
+    public void visit(TreeNodeSub.Program program) throws InterpreterException {
         env = new Environment(program.getFunctions());
-        //jakis visit co co do maina przesunie nas itepe i tede
+        TreeNode main = getFunc("main"); //todo błąd nie znaleziono maina
+        main.accept(this); // git tak? main wskazuje na rekord z nazwą funkcji main w array, która jest polem Programu
     }
 
     public void visit(TreeNodeSub.FunctionDef fd) throws InterpreterException {
+        env.makeBlockContext();
+
+        if(((TreeNodeSub.FunctionDef)(getFunc(fd.getName().getContent()))).getParameters() != null) {
+            env.setParameters(((TreeNodeSub.Parameters) ((TreeNodeSub.FunctionDef) (getFunc(fd.getName().getContent()))).getParameters()).getParameters());
+
+            if (env.getParameters().size() != env.getParametersValues().size())
+                throw new InterpreterException("Expected: " + env.getParameters().size() + "arguments but got: " + env.getParametersValues().size());
+            int j = 0;
+            for (TreeNode i : env.getParameters()) {
+                ((TreeNodeSub.Variable) i).setValue((env.getParametersValues().get(j)));
+                j++;
+            }
+        }
         fd.getFunctionBlock().accept(this);
+        env.deleteBlockContext();
     }
 
+    //TODO OBIEKTU VARIABLE NIE TRAKTUJEMY JAKO PRAWDZIWE VAR - TRZEBA WZIĄĆ VARIABLE Z VALUE Z CURRENT VAR CONTEXT
     public void visit(TreeNodeSub.FunctionCall fd) throws InterpreterException// przekazac argumenty z funcCalla do zmiennych lokalnych w nowym callstacku
     {
-        env.makeBlockContext();
-        env.addVarContext(); // to nie moze byc tu
-        ((TreeNodeSub.FunctionDef)(getFunc(fd.getName().getContent()))).getParameters();
-        for(TreeNode i : ((TreeNodeSub.Parameters)((TreeNodeSub.FunctionDef)(getFunc(fd.getName().getContent()))).getParameters()).getParameters()){
-            // mapa argumentów z parametrami
-        }
+        //tutaj zapisanie wartości tych parametrów po kolei do Array parameters
+        ArrayList<TreeNode> tmp = new ArrayList<>();
+        for(TreeNode i : fd.getArguments())
+        {
+            if(i instanceof TreeNodeSub.Variable || i instanceof TreeNodeSub.FunctionCall)
+            {
+                i.accept(this); // po wyjściu stąd w lastResult będzie wartość vara albo functioncalla
+                tmp.set((tmp.size() - 1), (TreeNode)env.getLastResult());
+            }
+            // będzie num, unit, albo string bez ifa
+            tmp.set((tmp.size() - 1), i);
 
-        getFunc(fd.getName().getContent()).accept(this);
-        env.deleteBlockContext();
+        }
+        env.setParametersValues(tmp);
+        getFunc(fd.getName().getContent()).accept(this); // wyszukuje funkcję w arrayu funkcji
     }
 
     public void visit(TreeNodeSub.FunctionBlock fb) throws InterpreterException {
         env.addVarContext();
+        if(env.getParameters() != null)
+        for(TreeNode i : env.getParameters())
+        {
+            env.declareVarInCurrentScope(i, ((TreeNodeSub.Variable) i).getValue());
+        }
 
         for(TreeNode i : fb.getStatements()){
             if(i instanceof TreeNodeSub.ReturnStatement)
             {
-                //cos tu jeszcze
                 i.accept(this);
+                // w tym momencie w lastResult jest wartość zwracana przez returnStatement
+                //a więc można zakończyć cały blockContext w funcDef
+                return;
             }
             i.accept(this);
         }
@@ -58,8 +96,7 @@ public class Interpreter{
         env.deleteVarContext();
     }
 
-    public void visit(TreeNodeSub.ReturnStatement rs)
-    {
+    public void visit(TreeNodeSub.ReturnStatement rs) throws InterpreterException {
         rs.getReturned().accept(this);
     }
 
@@ -88,22 +125,22 @@ public class Interpreter{
 
     public void visit(TreeNodeSub.AssignStatement ass) throws InterpreterException {
         ass.getName().accept(this); // to bedzie Variable
-        if(!(env.getLastResult() instanceof TreeNodeSub.Variable)) throw new InterpreterException("Not a variable");
-        TreeNodeSub.Variable var = (TreeNodeSub.Variable) env.getLastResult(); // zapisać zmienno
+        if(!(env.getLastResultVar() instanceof TreeNodeSub.Variable)) throw new InterpreterException("Not a variable");
+        TreeNodeSub.Variable var = (TreeNodeSub.Variable) env.getLastResultVar(); // zapisać zmienno
 
         ass.getValue().accept(this);
-        if(!((env.getLastResult() instanceof TreeNodeSub.Unit) &&  (env.getLastResult() instanceof TreeNodeSub.Num) && (env.getLastResult() instanceof TreeNodeSub.StringVar))) throw new InterpreterException("błąd"); //todo zmien
+        if(!((env.getLastResult() instanceof TreeNodeSub.Unit) || (env.getLastResult() instanceof TreeNodeSub.Num) || (env.getLastResult() instanceof TreeNodeSub.StringVar))) throw new InterpreterException("131"); //todo zmien
 
         env.updateVarInCurrentBlockContext(var, (TreeNode)env.getLastResult());
     }
 
     public void visit(TreeNodeSub.VarDeclaration vd) throws InterpreterException {
         vd.getName().accept(this); // tu variable
-        if(!(env.getLastResult() instanceof TreeNodeSub.Variable)) throw new InterpreterException("Not a variable");
-        TreeNodeSub.Variable var = (TreeNodeSub.Variable) env.getLastResult();
+        if(!(env.getLastResultVar() instanceof TreeNodeSub.Variable)) throw new InterpreterException("Not a variable");
+        vd.getValue().accept(this); // ustawi lastResult na num, string lub unit
+        TreeNodeSub.Variable var = (TreeNodeSub.Variable) env.getLastResultVar();
 
-        vd.getValue().accept(this); //todo TRZEBA ZROBIĆ TAK, ŻE JAK NIE MA ASSIGNMENTU TO NULL ZAPISUJE DO LASTRESULT - NULL oznacza deklarację bez zainicjowania
-        if(!((env.getLastResult() instanceof TreeNodeSub.Unit) &&  (env.getLastResult() instanceof TreeNodeSub.Num) && (env.getLastResult() instanceof TreeNodeSub.StringVar) && env.getLastResult() == null)) throw new InterpreterException("błąd");
+        if(!((env.getLastResult() instanceof TreeNodeSub.Unit) || (env.getLastResult() instanceof TreeNodeSub.Num) || (env.getLastResult() instanceof TreeNodeSub.StringVar) || env.getLastResult() == null)) throw new InterpreterException("142");
 
         env.declareVarInCurrentScope(var, (TreeNode)env.getLastResult());
     }
@@ -134,16 +171,57 @@ public class Interpreter{
         if(tmpLeft instanceof TreeNodeSub.Num && tmpRight instanceof TreeNodeSub.Num)
         {
             if(operator.getType() == TokenType.MULTIPLICATIVE_OP) {
-                double result = ((TreeNodeSub.Num)tmpLeft).getValue().getContent() * ((TreeNodeSub.Num)tmpRight).getValue().getContent();
+                double result = ((TreeNodeSub.Num)tmpLeft).getValue().getNumcontent() * ((TreeNodeSub.Num)tmpRight).getValue().getNumcontent();
                 env.setLastResult(new TreeNodeSub.Num(new Token(TokenType.NUMBER, result, 0, 0)));
             }
+            else  if(operator.getType() == TokenType.DIVISION_OP) {
+                double result = ((TreeNodeSub.Num)tmpLeft).getValue().getNumcontent() / ((TreeNodeSub.Num)tmpRight).getValue().getNumcontent();
+                env.setLastResult(new TreeNodeSub.Num(new Token(TokenType.NUMBER, result, 0, 0)));
+            }
+            else  if(operator.getContent().equals("-")) { //todo dodać w lexerze rozróżnianie - i +
+                double result = ((TreeNodeSub.Num)tmpLeft).getValue().getNumcontent() - ((TreeNodeSub.Num)tmpRight).getValue().getNumcontent();
+                env.setLastResult(new TreeNodeSub.Num(new Token(TokenType.NUMBER, result, 0, 0)));
+            }
+            else  if(operator.getContent().equals("+")) { //todo dodać w lexerze rozróżnianie - i +
+                double result = ((TreeNodeSub.Num)tmpLeft).getValue().getNumcontent() + ((TreeNodeSub.Num)tmpRight).getValue().getNumcontent();
+                env.setLastResult(new TreeNodeSub.Num(new Token(TokenType.NUMBER, result, 0, 0)));
+            }
+        }
+        else if(tmpLeft instanceof TreeNodeSub.StringVar && tmpRight instanceof TreeNodeSub.StringVar)
+        {
+            if(operator.getContent().equals("-")) { //todo dodać w lexerze rozróżnianie - i +
+            String result = ((TreeNodeSub.StringVar)tmpLeft).getValue().getContent() + ((TreeNodeSub.StringVar)tmpRight).getValue().getContent();
+            env.setLastResult(new TreeNodeSub.Num(new Token(TokenType.NAME, result, 0, 0)));
+        }
         }
     }
 
     public void visit(TreeNodeSub.BinaryConditionOperator bco) throws  InterpreterException {
         bco.getLeftExp().accept(this);
-        if(!((env.getLastResult() instanceof TreeNodeSub.Unit) && (env.getLastResult() instanceof TreeNodeSub.Num) && (env.getLastResult() instanceof TreeNodeSub.StringVar))) throw new InterpreterException("błąd");
+        if(!((env.getLastResult() instanceof TreeNodeSub.Unit) && (env.getLastResult() instanceof TreeNodeSub.Num) && (env.getLastResult() instanceof TreeNodeSub.StringVar))) throw new InterpreterException("200");
 
     }
+    //odwiedzona variable będzie ustawiała dwa pola env
+    public void visit(TreeNodeSub.Variable v) throws  InterpreterException {
+        env.setLastResultVar(v);
+        if(v.getValue() != null) {
+            v.getValue().accept(this);
+            env.setLastResult(env.getVarValue(v));
+        }
+        // last result ustawiony na unit, num albo string
+    }
 
+    public void visit(TreeNodeSub.Num num) {
+        env.setLastResult(num);
+    }
+
+    public void visit(TreeNodeSub.StringVar stringVar) {
+    }
+
+    public void visit(TreeNodeSub.Parameters parameters) {
+        //niepotrzebne chyba, rzutuję już wcześniej
+    }
+
+    public void visit(TreeNodeSub.Unit unit) {
+    }
 }

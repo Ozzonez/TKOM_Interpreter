@@ -1,4 +1,7 @@
 package com.company;
+import com.interpreter.Interpreter;
+import com.interpreter.InterpreterException;
+import com.lexer.LexerException;
 import com.lexer.Token;
 import com.lexer.Lexer;
 import com.lexer.TokenType;
@@ -11,7 +14,7 @@ import java.io.FileNotFoundException;
 
 public class Main {
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws FileNotFoundException, LexerException {
 //        Lexer lexer = new Lexer("C:\\Users\\Dadej\\Desktop\\tkom_\\tkom\\src\\Program.txt", 1);
 //
 //        Token token;
@@ -34,10 +37,14 @@ public class Main {
         Parser parser = new Parser(file);
         try {
             p = parser.program();
+
+            Interpreter interpreter = new Interpreter(p);
+            TreeNode wynik = (TreeNode)interpreter.run();
+            System.out.println("--------------");
             if(p.equals(null))
                 System.out.println("XD");
         }
-        catch(ParserException e){
+        catch(ParserException | LexerException | InterpreterException e){
             System.out.println(e.getMessage());
         }
     }

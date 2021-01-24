@@ -1,7 +1,5 @@
 package com.tests;
-import com.lexer.Lexer;
-import com.lexer.Token;
-import com.lexer.TokenType;
+import com.lexer.*;
 import com.parser.ParserException;
 import com.parser.TreeNode;
 import com.parser.TreeNodeSub;
@@ -41,7 +39,7 @@ public class ParserTests {
 
     TreeNode program = parser.program();
 
-    public ParserTests() throws FileNotFoundException, ParserException {
+    public ParserTests() throws FileNotFoundException, ParserException, LexerException {
     }
 
     ArrayList<TreeNode> statements = ((FunctionBlock)((FunctionDef)(((Program) program).getFunctions().get(0))).getFunctionBlock()).getStatements();
@@ -130,7 +128,7 @@ public class ParserTests {
         TreeNode statement2 = (((FunctionBlock)((FunctionDef)(((Program) program2).getFunctions().get(0))).getFunctionBlock()).getStatements()).get(0);
 
         assertEquals(TokenType.NUMBER, ((Num)((AssignStatement)statement2).getValue()).getValue().getType());
-        assertEquals("20", ((Num)((AssignStatement)statement2).getValue()).getValue().getContent());
+        assertEquals(20, ((Num)((AssignStatement)statement2).getValue()).getValue().getNumcontent());
     }
 
 
@@ -201,7 +199,7 @@ public class ParserTests {
     }
     @Test
     void checkWhileStatementCondition4() throws Exception {
-        assertEquals("3", ((Num)((BinaryConditionOperator)(((BinaryConditionOperator)((WhileStatement)statement5).getCondition()).getRightExp())).getRightExp()).getValue().getContent());
+        assertEquals(3, ((Num)((BinaryConditionOperator)(((BinaryConditionOperator)((WhileStatement)statement5).getCondition()).getRightExp())).getRightExp()).getValue().getNumcontent());
     }
     @Test
     void checkWhileStatementCondition5() throws Exception {
@@ -209,7 +207,7 @@ public class ParserTests {
     }
     @Test
     void checkWhileStatementCondition6() throws Exception {
-        assertEquals("100", ((Num)((BinaryConditionOperator)(((BinaryConditionOperator)((WhileStatement)statement5).getCondition()).getLeftExp())).getRightExp()).getValue().getContent());
+        assertEquals(100, ((Num)((BinaryConditionOperator)(((BinaryConditionOperator)((WhileStatement)statement5).getCondition()).getLeftExp())).getRightExp()).getValue().getNumcontent());
     }
     @Test
     void checkWhileStatementCondition7() throws Exception {
