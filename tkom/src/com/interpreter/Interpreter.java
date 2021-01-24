@@ -117,16 +117,12 @@ public class Interpreter{
         while((Boolean) (env.getLastResult()))
         {
             ws.getWhileBody().accept(this);
-
             ws.getCondition().accept(this);
             if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("błąd"); //todo zmien
         }
     }
 
     public void visit(TreeNodeSub.AssignStatement ass) throws InterpreterException {
-        //ass.getName().accept(this); // nie trzeba wizytować
-        //if(!(env.getLastResultVar() instanceof TreeNodeSub.Variable)) throw new InterpreterException("Not a variable");
-        //TreeNodeSub.Variable var = (TreeNodeSub.Variable) env.getLastResultVar(); // zapisać zmienno
         TreeNode var = ass.getName();
         ass.getValue().accept(this); // w lastresult wynik tego
         if(!((env.getLastResult() instanceof TreeNodeSub.Unit) || (env.getLastResult() instanceof TreeNodeSub.Num) || (env.getLastResult() instanceof TreeNodeSub.StringVar))) throw new InterpreterException("131"); //todo zmien
@@ -135,11 +131,8 @@ public class Interpreter{
     }
 
     public void visit(TreeNodeSub.VarDeclaration vd) throws InterpreterException {
-        //vd.getName().accept(this); // tu variable
-        //if(!(env.getLastResultVar() instanceof TreeNodeSub.Variable)) throw new InterpreterException("Not a variable");
         TreeNode var = vd.getName();
         vd.getValue().accept(this); // ustawi lastResult na num, string lub unit
-        //TreeNodeSub.Variable var = (TreeNodeSub.Variable) env.getLastResultVar();
 
         if(!((env.getLastResult() instanceof TreeNodeSub.Unit) || (env.getLastResult() instanceof TreeNodeSub.Num) || (env.getLastResult() instanceof TreeNodeSub.StringVar) || env.getLastResult() == null)) throw new InterpreterException("142");
 

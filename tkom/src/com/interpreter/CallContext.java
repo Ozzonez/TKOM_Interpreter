@@ -43,14 +43,6 @@ public class CallContext {
 
     //todo MAP< STRING , NUM ABLO STRING ALBO UNIT > TO JEST KLASA VARIABLE CZYLI DO
     public void declareVarInCurrentScope(TreeNode name, TreeNode value) throws InterpreterException {
-        TreeNode tmp;
-//        if(value instanceof TreeNodeSub.StringVar)
-//            tmp = (TreeNodeSub.StringVar)value;
-//        else if(value instanceof TreeNodeSub.Num)
-//            tmp = (TreeNodeSub.Num)value;
-//        else if(value instanceof TreeNodeSub.Unit)
-//            tmp = (TreeNodeSub.Unit)value; sprawdzanie na tym etapie chyba niepotrzebne
-
         localVariablesStack.get(localVariablesStack.size() - 1).put(((TreeNodeSub.Variable)name).getName().getContent(), value);
     }
 
