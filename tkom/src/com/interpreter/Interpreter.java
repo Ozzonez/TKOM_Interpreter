@@ -64,11 +64,13 @@ public class Interpreter{
             if(i instanceof TreeNodeSub.Variable || i instanceof TreeNodeSub.FunctionCall)
             {
                 i.accept(this); // po wyjściu stąd w lastResult będzie wartość vara albo functioncalla
-                tmp.set((tmp.size() - 1), (TreeNode)env.getLastResult());
-            }
-            // będzie num, unit, albo string bez ifa
-            tmp.set((tmp.size() - 1), i);
 
+                tmp.add((TreeNode)env.getLastResult());
+
+                System.out.println(((TreeNodeSub.Num)env.getLastResult()).getValue().getNumcontent());
+            }
+            else // będzie num, unit, albo string bez ifa
+            tmp.add(i);
         }
         env.setParametersValues(tmp);
         getFunc(fd.getName().getContent()).accept(this); // wyszukuje funkcję w arrayu funkcji
@@ -194,6 +196,7 @@ public class Interpreter{
             env.setLastResult(new TreeNodeSub.Num(new Token(TokenType.NAME, result, 0, 0)));
         }
         }
+        else throw new InterpreterException("Forbidden operation!");
     }
 
     public void visit(TreeNodeSub.BinaryConditionOperator bco) throws  InterpreterException {
@@ -204,7 +207,7 @@ public class Interpreter{
     //odwiedzona variable będzie ustawiała dwa pola env
     public void visit(TreeNodeSub.Variable v) throws  InterpreterException {
         env.setLastResultVar(v);
-        if(v.getValue() != null) {
+        if(v.getValue() != null) { // to get value sprawdzenie zle jakos trzeba sie dostać do setLastResult od getVarValue
             v.getValue().accept(this);
             env.setLastResult(env.getVarValue(v));
         }
@@ -216,6 +219,7 @@ public class Interpreter{
     }
 
     public void visit(TreeNodeSub.StringVar stringVar) {
+        env.setLastResult(stringVar);
     }
 
     public void visit(TreeNodeSub.Parameters parameters) {
