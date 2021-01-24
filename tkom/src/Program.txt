@@ -1,12 +1,12 @@
 function foo(a, b)
 {
-    return a + b;
+    return b + 100;
 }
 
 function main()
 {
     var x = 5;
-    var y = 3;
+    var y = 4;
     x = foo(x, y);
     return x;
 }

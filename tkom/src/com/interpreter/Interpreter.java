@@ -46,7 +46,7 @@ public class Interpreter{
                 throw new InterpreterException("Expected: " + env.getParameters().size() + "arguments but got: " + env.getParametersValues().size());
             int j = 0;
             for (TreeNode i : env.getParameters()) {
-                ((TreeNodeSub.Variable) i).setValue((env.getParametersValues().get(j)));
+                ((TreeNodeSub.Variable) i).setValue((env.getParametersValues().get(j))); //todo to jedyne dozwolone użycie value w Variable
                 j++;
             }
         }
@@ -66,8 +66,6 @@ public class Interpreter{
                 i.accept(this); // po wyjściu stąd w lastResult będzie wartość vara albo functioncalla
 
                 tmp.add((TreeNode)env.getLastResult());
-
-                System.out.println(((TreeNodeSub.Num)env.getLastResult()).getValue().getNumcontent());
             }
             else // będzie num, unit, albo string bez ifa
             tmp.add(i);
@@ -81,7 +79,7 @@ public class Interpreter{
         if(env.getParameters() != null)
         for(TreeNode i : env.getParameters())
         {
-            env.declareVarInCurrentScope(i, ((TreeNodeSub.Variable) i).getValue());
+            env.declareVarInCurrentScope(i, ((TreeNodeSub.Variable) i).getValue()); //todo DOZWOLONE TYLKO W TYM PRZYPADKU, W INNYCH GETVALUE NIE REPREZENTUJE WARTOŚCI ZMIENNEJ
         }
 
         for(TreeNode i : fb.getStatements()){
@@ -126,21 +124,22 @@ public class Interpreter{
     }
 
     public void visit(TreeNodeSub.AssignStatement ass) throws InterpreterException {
-        ass.getName().accept(this); // to bedzie Variable
-        if(!(env.getLastResultVar() instanceof TreeNodeSub.Variable)) throw new InterpreterException("Not a variable");
-        TreeNodeSub.Variable var = (TreeNodeSub.Variable) env.getLastResultVar(); // zapisać zmienno
-
-        ass.getValue().accept(this);
+        //ass.getName().accept(this); // nie trzeba wizytować
+        //if(!(env.getLastResultVar() instanceof TreeNodeSub.Variable)) throw new InterpreterException("Not a variable");
+        //TreeNodeSub.Variable var = (TreeNodeSub.Variable) env.getLastResultVar(); // zapisać zmienno
+        TreeNode var = ass.getName();
+        ass.getValue().accept(this); // w lastresult wynik tego
         if(!((env.getLastResult() instanceof TreeNodeSub.Unit) || (env.getLastResult() instanceof TreeNodeSub.Num) || (env.getLastResult() instanceof TreeNodeSub.StringVar))) throw new InterpreterException("131"); //todo zmien
 
         env.updateVarInCurrentBlockContext(var, (TreeNode)env.getLastResult());
     }
 
     public void visit(TreeNodeSub.VarDeclaration vd) throws InterpreterException {
-        vd.getName().accept(this); // tu variable
-        if(!(env.getLastResultVar() instanceof TreeNodeSub.Variable)) throw new InterpreterException("Not a variable");
+        //vd.getName().accept(this); // tu variable
+        //if(!(env.getLastResultVar() instanceof TreeNodeSub.Variable)) throw new InterpreterException("Not a variable");
+        TreeNode var = vd.getName();
         vd.getValue().accept(this); // ustawi lastResult na num, string lub unit
-        TreeNodeSub.Variable var = (TreeNodeSub.Variable) env.getLastResultVar();
+        //TreeNodeSub.Variable var = (TreeNodeSub.Variable) env.getLastResultVar();
 
         if(!((env.getLastResult() instanceof TreeNodeSub.Unit) || (env.getLastResult() instanceof TreeNodeSub.Num) || (env.getLastResult() instanceof TreeNodeSub.StringVar) || env.getLastResult() == null)) throw new InterpreterException("142");
 
@@ -207,11 +206,7 @@ public class Interpreter{
     //odwiedzona variable będzie ustawiała dwa pola env
     public void visit(TreeNodeSub.Variable v) throws  InterpreterException {
         env.setLastResultVar(v);
-        if(v.getValue() != null) { // to get value sprawdzenie zle jakos trzeba sie dostać do setLastResult od getVarValue
-            v.getValue().accept(this);
-            env.setLastResult(env.getVarValue(v));
-        }
-        // last result ustawiony na unit, num albo string
+        env.setLastResult(env.getVarValue(v));
     }
 
     public void visit(TreeNodeSub.Num num) {
