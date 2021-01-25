@@ -37,6 +37,10 @@ public class Environment {
         this.lastResult = lastResult;
     }
 
+    public void setLastResult(Object lastResult) { //todo tymczasowo
+        this.lastResult = lastResult;
+    }
+
     public Object getLastResult() {
         return lastResult;
     }

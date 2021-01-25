@@ -356,6 +356,8 @@ public class TreeNodeSub {
             this.value = value;
         }
 
+        public Num() {};
+
         public Token getValue() {
             return value;
         }

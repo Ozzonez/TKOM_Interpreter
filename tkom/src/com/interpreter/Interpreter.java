@@ -77,7 +77,7 @@ public class Interpreter{
     public void visit(TreeNodeSub.FunctionBlock fb) throws InterpreterException {
         env.addVarContext();
         if(env.getParameters() != null)
-        for(TreeNode i : env.getParameters())
+        for(TreeNode i : env.getParameters()) //todo ZLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
         {
             env.declareVarInCurrentScope(i, ((TreeNodeSub.Variable) i).getValue()); //todo DOZWOLONE TYLKO W TYM PRZYPADKU, W INNYCH GETVALUE NIE REPREZENTUJE WARTOŚCI ZMIENNEJ
         }
@@ -86,8 +86,6 @@ public class Interpreter{
             if(i instanceof TreeNodeSub.ReturnStatement)
             {
                 i.accept(this);
-                // w tym momencie w lastResult jest wartość zwracana przez returnStatement
-                //a więc można zakończyć cały blockContext w funcDef
                 return;
             }
             i.accept(this);
@@ -102,23 +100,23 @@ public class Interpreter{
 
     public void visit(TreeNodeSub.IfStatement ifs) throws InterpreterException {
         ifs.getCondition().accept(this);
-        if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("G+CHUJ"); //todo zmien
+        if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("105"); //todo zmien nwm co tu miałoby wyrzucać, już wcześniej rzuci błąd
 
         if((Boolean) (env.getLastResult()))
             ifs.getInstructionBlockIfTrue().accept(this);
-        else
+        else if(ifs.getInstructionBlockIfFalse() != null)
             ifs.getInstructionBlockIfFalse().accept(this);
     }
 
     public void visit(TreeNodeSub.WhileStatement ws) throws InterpreterException {
         ws.getCondition().accept(this);
-        if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("błąd"); //todo zmien
+        if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("115"); //todo zmien
 
         while((Boolean) (env.getLastResult()))
         {
             ws.getWhileBody().accept(this);
             ws.getCondition().accept(this);
-            if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("błąd"); //todo zmien
+            if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("121"); //todo zmien
         }
     }
 
@@ -132,16 +130,19 @@ public class Interpreter{
 
     public void visit(TreeNodeSub.VarDeclaration vd) throws InterpreterException {
         TreeNode var = vd.getName();
+        if(vd.getValue() != null)
         vd.getValue().accept(this); // ustawi lastResult na num, string lub unit
 
         if(!((env.getLastResult() instanceof TreeNodeSub.Unit) || (env.getLastResult() instanceof TreeNodeSub.Num) || (env.getLastResult() instanceof TreeNodeSub.StringVar) || env.getLastResult() == null)) throw new InterpreterException("142");
 
-        env.declareVarInCurrentScope(var, (TreeNode)env.getLastResult());
+        if(vd.getValue() != null)
+            env.declareVarInCurrentScope(var, (TreeNode)env.getLastResult());
+        else env.declareVarInCurrentScope(var, null);
     }
 
     public void visit(TreeNodeSub.PrintStatement pt) throws InterpreterException {
         pt.getContent().accept(this);
-        //todo sprawdzać co jest w lastResult i rzucać błąd jeśli źle
+        //todo sprawdzać co jest w lastResult i rzucać błąd jeśli źle ----- toString zaimplementować
         System.out.println(env.getLastResult());
     }
 
@@ -153,6 +154,7 @@ public class Interpreter{
         //todo zrobić
     }
 
+    //wystarczy obliczać lewy z prawym, już parser zajął się pierwszeństwem wykonania
     public void visit(TreeNodeSub.BinOperator bo) throws InterpreterException {
         bo.getLeftExp().accept(this);
         TreeNode tmpLeft = (TreeNode)env.getLastResult();
@@ -178,24 +180,61 @@ public class Interpreter{
             }
             else  if(operator.getContent().equals("+")) { //todo dodać w lexerze rozróżnianie - i +
                 double result = ((TreeNodeSub.Num)tmpLeft).getValue().getNumcontent() + ((TreeNodeSub.Num)tmpRight).getValue().getNumcontent();
-                env.setLastResult(new TreeNodeSub.Num(new Token(TokenType.NUMBER, result, 0, 0)));
+                env.setLastResult(new TreeNodeSub.StringVar(new Token(TokenType.NUMBER, result, 0, 0)));
             }
         }
         else if(tmpLeft instanceof TreeNodeSub.StringVar && tmpRight instanceof TreeNodeSub.StringVar)
         {
             if(operator.getContent().equals("-")) { //todo dodać w lexerze rozróżnianie - i +
             String result = ((TreeNodeSub.StringVar)tmpLeft).getValue().getContent() + ((TreeNodeSub.StringVar)tmpRight).getValue().getContent();
-            env.setLastResult(new TreeNodeSub.Num(new Token(TokenType.NAME, result, 0, 0)));
+            env.setLastResult(new TreeNodeSub.Num(new Token(TokenType.QUOTE, result, 0, 0)));
+            }
         }
-        }
+        //todo dla unitów inne rodzaje dodawania, klasa ComplexUnit trzymająca strukturę użytych jednostek
         else throw new InterpreterException("Forbidden operation!");
     }
 
+    //wystarczy porównywać lewy z prawym, już parser zajął się pierwszeństwem wykonania
     public void visit(TreeNodeSub.BinaryConditionOperator bco) throws  InterpreterException {
         bco.getLeftExp().accept(this);
-        if(!((env.getLastResult() instanceof TreeNodeSub.Unit) && (env.getLastResult() instanceof TreeNodeSub.Num) && (env.getLastResult() instanceof TreeNodeSub.StringVar))) throw new InterpreterException("200");
+        Object leftExp = env.getLastResult();
+        bco.getRightExp().accept(this);
+        Object rightExp = env.getLastResult();
 
+        if(rightExp instanceof Boolean && leftExp instanceof Boolean)
+        {
+            if(bco.getOperator().getType() == TokenType.AND_OP)
+                env.setLastResult((Boolean)leftExp && (Boolean) rightExp); //TODO JAK BŁĄD WYWALI SPRAWDŹ TO
+            else if(bco.getOperator().getType() == TokenType.OR_OP)
+                env.setLastResult((Boolean)leftExp || (Boolean) rightExp);
+            else if(bco.getOperator().getType() == TokenType.EQUAL_OP)
+                env.setLastResult((Boolean)leftExp == (Boolean) rightExp);
+            else if(bco.getOperator().getType() == TokenType.NOT_EQUAL_OP)
+                env.setLastResult((Boolean)leftExp != (Boolean) rightExp);
+            else throw new InterpreterException("Forbidden logical operation!"); //TODO coś tu więcej info (ściągnij z errorów javovych)
+        }
+        else if(leftExp instanceof TreeNodeSub.Num && rightExp instanceof TreeNodeSub.Num)
+        {
+            if(bco.getOperator().getType() == TokenType.EQUAL_OP)
+                env.setLastResult(((TreeNodeSub.Num) leftExp).getValue().getNumcontent() == ((TreeNodeSub.Num) rightExp).getValue().getNumcontent());
+            else if(bco.getOperator().getType() == TokenType.NOT_EQUAL_OP)
+                env.setLastResult(((TreeNodeSub.Num) leftExp).getValue().getNumcontent() != ((TreeNodeSub.Num) rightExp).getValue().getNumcontent());
+            else if(bco.getOperator().getType() == TokenType.GREATER__OP)
+                env.setLastResult(((TreeNodeSub.Num) leftExp).getValue().getNumcontent() > ((TreeNodeSub.Num) rightExp).getValue().getNumcontent());
+            else if(bco.getOperator().getType() == TokenType.GREATER_EQUAL_OP)
+                env.setLastResult(((TreeNodeSub.Num) leftExp).getValue().getNumcontent() >= ((TreeNodeSub.Num) rightExp).getValue().getNumcontent());
+            else if(bco.getOperator().getType() == TokenType.SMALLER__OP)
+                env.setLastResult(((TreeNodeSub.Num) leftExp).getValue().getNumcontent() < ((TreeNodeSub.Num) rightExp).getValue().getNumcontent());
+            else if(bco.getOperator().getType() == TokenType.SMALLER_EQUAL_OP)
+                env.setLastResult(((TreeNodeSub.Num) leftExp).getValue().getNumcontent() <= ((TreeNodeSub.Num) rightExp).getValue().getNumcontent());
+        }
+        else if(leftExp instanceof TreeNodeSub.StringVar && rightExp instanceof TreeNodeSub.StringVar)
+        {
+            throw new InterpreterException("String operations not yet implemented");
+        }
+        else throw new InterpreterException("Forbidden logical operation!");
     }
+
     //odwiedzona variable będzie ustawiała dwa pola env
     public void visit(TreeNodeSub.Variable v) throws  InterpreterException {
         env.setLastResultVar(v);

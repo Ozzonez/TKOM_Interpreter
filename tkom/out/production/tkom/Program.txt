@@ -1,13 +1,23 @@
+function foo2(x)
+{
+    return x * 2;
+}
+
 function foo(a, b)
 {
-    return b + 100;
+    a = foo2(5);
+    return b + a;
 }
 
 function main()
 {
-    var x = 5;
+    var x;
     var y = 4;
-    x = foo(x, y);
-    return x;
+    if( (1 > 3) || (1 > 2))
+    {
+        y = 5.2;
+    };
+
+    return y;
 }
 
