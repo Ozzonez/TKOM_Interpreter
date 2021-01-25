@@ -44,11 +44,6 @@ public class Interpreter{
 
             if (env.getParameters().size() != env.getParametersValues().size())
                 throw new InterpreterException("Expected: " + env.getParameters().size() + "arguments but got: " + env.getParametersValues().size());
-            int j = 0;
-            for (TreeNode i : env.getParameters()) {
-                ((TreeNodeSub.Variable) i).setValue((env.getParametersValues().get(j))); //todo to jedyne dozwolone użycie value w Variable
-                j++;
-            }
         }
         fd.getFunctionBlock().accept(this);
         env.deleteBlockContext();
@@ -76,10 +71,13 @@ public class Interpreter{
 
     public void visit(TreeNodeSub.FunctionBlock fb) throws InterpreterException {
         env.addVarContext();
+        int j = 0;
+        ArrayList<TreeNode> parametersValues = env.getParametersValues();
         if(env.getParameters() != null)
         for(TreeNode i : env.getParameters()) //todo ZLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
         {
-            env.declareVarInCurrentScope(i, ((TreeNodeSub.Variable) i).getValue()); //todo DOZWOLONE TYLKO W TYM PRZYPADKU, W INNYCH GETVALUE NIE REPREZENTUJE WARTOŚCI ZMIENNEJ
+            env.declareVarInCurrentScope(i, parametersValues.get(j)); //todo DOZWOLONE TYLKO W TYM PRZYPADKU, W INNYCH GETVALUE NIE REPREZENTUJE WARTOŚCI ZMIENNEJ
+            j++;
         }
 
         for(TreeNode i : fb.getStatements()){
@@ -90,7 +88,6 @@ public class Interpreter{
             }
             i.accept(this);
         }
-
         env.deleteVarContext();
     }
 
@@ -110,13 +107,13 @@ public class Interpreter{
 
     public void visit(TreeNodeSub.WhileStatement ws) throws InterpreterException {
         ws.getCondition().accept(this);
-        if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("115"); //todo zmien
+        if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("115"); //todo tu może być błąd typu while(1) albo while(x + 2) coś teges
 
         while((Boolean) (env.getLastResult()))
         {
             ws.getWhileBody().accept(this);
             ws.getCondition().accept(this);
-            if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("121"); //todo zmien
+            if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("121"); //todo to potrzebne????
         }
     }
 
@@ -180,14 +177,14 @@ public class Interpreter{
             }
             else  if(operator.getContent().equals("+")) { //todo dodać w lexerze rozróżnianie - i +
                 double result = ((TreeNodeSub.Num)tmpLeft).getValue().getNumcontent() + ((TreeNodeSub.Num)tmpRight).getValue().getNumcontent();
-                env.setLastResult(new TreeNodeSub.StringVar(new Token(TokenType.NUMBER, result, 0, 0)));
+                env.setLastResult(new TreeNodeSub.Num(new Token(TokenType.NUMBER, result, 0, 0)));
             }
         }
         else if(tmpLeft instanceof TreeNodeSub.StringVar && tmpRight instanceof TreeNodeSub.StringVar)
         {
             if(operator.getContent().equals("-")) { //todo dodać w lexerze rozróżnianie - i +
             String result = ((TreeNodeSub.StringVar)tmpLeft).getValue().getContent() + ((TreeNodeSub.StringVar)tmpRight).getValue().getContent();
-            env.setLastResult(new TreeNodeSub.Num(new Token(TokenType.QUOTE, result, 0, 0)));
+            env.setLastResult(new TreeNodeSub.StringVar(new Token(TokenType.QUOTE, result, 0, 0)));
             }
         }
         //todo dla unitów inne rodzaje dodawania, klasa ComplexUnit trzymająca strukturę użytych jednostek
