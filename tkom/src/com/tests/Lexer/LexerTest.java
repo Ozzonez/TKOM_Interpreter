@@ -1,4 +1,4 @@
-package com.tests;
+package com.tests.Lexer;
 
 import com.lexer.Lexer;
 import com.lexer.LexerException;

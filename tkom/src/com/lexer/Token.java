@@ -45,6 +45,8 @@ public class Token {
         return y;
     }
 
+    public String getLine() { return " line: " + y + " " + "row: " + x;}
+
     ;
     // cos jeszcze zapamietujace miejsce w pliku na przyszlosc????
 

@@ -8,6 +8,7 @@ import com.lexer.TokenType;
 import com.parser.Parser;
 import com.parser.ParserException;
 import com.parser.TreeNode;
+import com.parser.TreeNodeSub;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,6 +42,7 @@ public class Main {
             Interpreter interpreter = new Interpreter(p);
             TreeNode wynik = (TreeNode)interpreter.run();
             System.out.println("--------------");
+            System.out.println(((TreeNodeSub.Unit)wynik));
             if(p.equals(null))
                 System.out.println("XD");
         }

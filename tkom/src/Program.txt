@@ -11,13 +11,19 @@ function foo(a, b)
 
 function main()
 {
-    var x = 1;
-    var y = 4;
-    while( x < 4 )
-    {
-        x = x + 1;
-    };
+    def unit m;
+    def unit kg;
+    def unit ms;
+    def newton kg / ms;
 
-    return x;
+
+    var x = [2 kg];
+    var y = [2 newton];
+
+    var w = x * y;
+    var wynik = w * y;
+    wynik = wynik * x;
+
+    return y;
 }
 

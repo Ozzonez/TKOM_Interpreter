@@ -1,5 +1,4 @@
 package com.parser;
-
 import com.lexer.Lexer;
 import com.lexer.LexerException;
 import com.lexer.Token;
@@ -8,6 +7,7 @@ import com.parser.TreeNodeSub.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Parser {
 
@@ -139,11 +139,13 @@ public class Parser {
 
             return new UnitBasicType(unitType);
         }
-        unitType = presentToken;
-        proceed(TokenType.NAME);
-        TreeNode formula = TryParseMultiplicativeFormula();
+//        unitType = presentToken;
+//        proceed(TokenType.NAME);
+//        TreeNode formula = TryParseMultiplicativeFormula();
+//
+//        return new UnitComplexType(unitType, formula);
 
-        return new UnitComplexType(unitType, formula);
+        return TryParseMultiplicativeFormula();
     }
 
     private TreeNode TryParsePrintStatement() throws ParserException, LexerException {
@@ -253,7 +255,6 @@ public class Parser {
 
         return new ReturnStatement(TryParseAdditiveTryParseExpression());
     }
-
 
     private TreeNode tryParseCondition() throws ParserException, LexerException {
         TreeNode node = tryParseAndCondition();
@@ -370,6 +371,11 @@ public class Parser {
 
         proceed(TokenType.LEFT_SQ_BRACKET);
         Token value = presentToken;
+
+
+        //new Num(value); zamiast Unit(value, unittype) bedzie Unit(new Num(value), unittype)
+
+
         proceed(TokenType.NUMBER);
         Token unitType = presentToken;
         proceed(TokenType.NAME);
@@ -384,31 +390,76 @@ public class Parser {
         return var;
     }
 
-    private TreeNode TryParseMultiplicativeFormula() throws ParserException, LexerException {
-        TreeNode node = null;
+    private TreeNode TryParseMultiplicativeFormula() throws ParserException, LexerException { //tak naprawdę tryParseComplexType
+//        TreeNode node = null;
+//
+//        node = TryParseExpressionFormula();
+//
+//        while (presentToken.getType() == TokenType.MULTIPLICATIVE_OP || presentToken.getType() == TokenType.DIVISION_OP) {
+//            Token operator = presentToken;
+//            proceed(operator.getType());
+//            node = new BinOperator(node, operator, TryParseExpressionFormula());
+//        }
+//        return node;
+//
 
-        node = TryParseExpressionFormula();
 
-        while (presentToken.getType() == TokenType.MULTIPLICATIVE_OP || presentToken.getType() == TokenType.DIVISION_OP) {
-            Token operator = presentToken;
-            proceed(operator.getType());
-            node = new BinOperator(node, operator, TryParseExpressionFormula());
+        Token unitName = presentToken;
+        proceed(TokenType.NAME);
+
+
+
+
+        ArrayList<TreeNode> aboveLine = new ArrayList<>();
+        ArrayList<TreeNode> belowLine = new ArrayList<>();
+        TreeNode unit = null;
+        if(presentToken.getType() == TokenType.DIVISION_OP) // samo dzielenie
+        {
+            proceed(TokenType.DIVISION_OP);
+            unit = tryParseUnitBasicType();
+                belowLine.add(unit);
+            while (presentToken.getType() != TokenType.SEMICOLON) {
+                proceed(TokenType.MULTIPLICATIVE_OP);
+                unit = tryParseUnitBasicType();
+                belowLine.add(unit);
+            }
         }
-        return node;
+        else
+        {
+            unit = tryParseUnitBasicType();
+            aboveLine.add(unit);
+            while(presentToken.getType() != TokenType.DIVISION_OP)
+            {
+                proceed(TokenType.MULTIPLICATIVE_OP);
+                unit = tryParseUnitBasicType();
+                aboveLine.add(unit);
+            }
+            proceed(TokenType.DIVISION_OP);
+            if(presentToken.getType() != TokenType.SEMICOLON) {
+                unit = tryParseUnitBasicType();
+                belowLine.add(unit);
+                while (presentToken.getType() != TokenType.SEMICOLON) {
+                    proceed(TokenType.MULTIPLICATIVE_OP);
+                    unit = tryParseUnitBasicType();
+                    belowLine.add(unit);
+                }
+            }
+        }
+        return new UnitComplexType(unitName, aboveLine, belowLine);
     }
 
-    private TreeNode TryParseExpressionFormula() throws ParserException, LexerException {
-        Token token = presentToken;
-        TreeNode node = null;
-
-        if (token.getType() == TokenType.LEFT_BRACKET) {
-            proceed(TokenType.LEFT_BRACKET);
-            node = TryParseMultiplicativeFormula();
-            proceed(TokenType.RIGHT_BRACKET);
-            return node;
-        }
-        return tryParseUnitBasicType();
-    }
+//    private TreeNode TryParseExpressionFormula() throws ParserException, LexerException {
+//        Token token = presentToken;
+//        TreeNode node = null;
+//
+//        if (token.getType() == TokenType.LEFT_BRACKET) {
+//            proceed(TokenType.LEFT_BRACKET);
+//            node = TryParseMultiplicativeFormula();
+//            proceed(TokenType.RIGHT_BRACKET);
+//            return node;
+//        }
+//        return tryParseUnitBasicType();
+//    }
 
     private TreeNode tryParseUnitBasicType() throws ParserException, LexerException {
         TreeNode var = new UnitBasicType(presentToken);
