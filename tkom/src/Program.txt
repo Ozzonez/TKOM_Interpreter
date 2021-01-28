@@ -1,29 +1,15 @@
-function foo2(x)
+function power(x, n)
 {
-    return x * 2;
+    if(n == 1)
+    {
+        return x;
+    };
+    var differenece = n - 1;
+    var s = power(x, differenece);
+    return x * s;
 }
-
-function foo(a, b)
-{
-    a = foo2(5);
-    return b + a;
-}
-
 function main()
 {
-    def unit m;
-    def unit kg;
-    def unit ms;
-    def newton kg / ms;
-
-
-    var x = [2 kg];
-    var y = [2 newton];
-
-    var w = x * y;
-    var wynik = w * y;
-    wynik = wynik * x;
-
-    return y;
+    print(power(2, 10));
 }
 

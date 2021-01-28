@@ -8,6 +8,7 @@ import com.lexer.TokenType;
 import com.sun.source.tree.Tree;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class TreeNodeSub {
 
@@ -218,6 +219,11 @@ public class TreeNodeSub {
         public void accept(Interpreter visitor) throws InterpreterException {
             visitor.visit(this);
         }
+
+        @Override
+        public String toString() {
+            return "" + leftExp + operator.getContent() + rightExp;
+        }
     }
 
     public static class AssignStatement implements TreeNode{
@@ -303,10 +309,8 @@ public class TreeNodeSub {
     public static class Unit implements TreeNode{
         Token value;
         Token unitType; //to jest name
-        Token realUnitType;
         ArrayList<TreeNode> aboveLine = new ArrayList<>();
         ArrayList<TreeNode> belowLine = new ArrayList<>();
-        //todo array 2 tylko kiedy unit jest value jakiejś variable
 
         public Unit(Token value, Token unitType)
         {
@@ -330,12 +334,8 @@ public class TreeNodeSub {
             return belowLine;
         }
 
-        public Token getRealUnitType() {
-            return realUnitType;
-        }
-
-        public void setRealUnitType(Token realUnitType) {
-            this.realUnitType = realUnitType;
+        public void setUnitType(Token unitType) {
+            this.unitType = unitType;
         }
 
         public Token getValue() {
@@ -360,26 +360,45 @@ public class TreeNodeSub {
 
         public void shortenFractions()
         {
-            for(TreeNode i : aboveLine)
+            int i = 0;
+            if(aboveLine.size() == 0 || belowLine.size() == 0) return;
+            for(Iterator<TreeNode> it = aboveLine.iterator(); it.hasNext();)
             {
-                for(TreeNode j : belowLine){
-                    if(((UnitBasicType) (i)).getName().getContent().equals(((UnitBasicType) (j)).getName().getContent()))
+                UnitBasicType tmp = ((UnitBasicType) (it.next()));
+                for(Iterator<TreeNode> it2 = belowLine.iterator(); it2.hasNext();) {
+                    if(tmp.getName().getContent().equals(((UnitBasicType) (it2.next())).getName().getContent()))
                     {
-                        belowLine.remove(j);
-                        aboveLine.remove(i);
+                        it2.remove();
+                        it.remove();
+                        break;
                     }
                 }
             }
-            aboveLine.sort(null);
-            belowLine.sort(null);
         }
 
-        public void equals(TreeNode unit) // przyjmuje unit
+        public Boolean equals(TreeNode unit)
         {
-            aboveLine.sort(null);
-            belowLine.sort(null);
-//            if(this.value.getNumcontent() == ((Unit)unit).getValue().getNumcontent() &&
-//                ) //jakoś setować realunittype żeby rozróżniać czy name jest dobry itp
+            return this.value.getNumcontent() == ((Unit)unit).getValue().getNumcontent();
+        }
+        public Boolean notEquals(TreeNode unit)
+        {
+            return this.value.getNumcontent() != ((Unit)unit).getValue().getNumcontent();
+        }
+        public Boolean greater(TreeNode unit)
+        {
+            return this.value.getNumcontent() > ((Unit)unit).getValue().getNumcontent();
+        }
+        public Boolean greaterEqual(TreeNode unit)
+        {
+            return this.value.getNumcontent() >= ((Unit)unit).getValue().getNumcontent();
+        }
+        public Boolean smaller(TreeNode unit)
+        {
+            return this.value.getNumcontent() < ((Unit)unit).getValue().getNumcontent();
+        }
+        public Boolean smallerEqual(TreeNode unit)
+        {
+            return this.value.getNumcontent() <= ((Unit)unit).getValue().getNumcontent();
         }
         public Unit multiply(TreeNode unit) throws InterpreterException {
             ArrayList<TreeNode> tmpAboveLine = (ArrayList<TreeNode>) (aboveLine.clone());
@@ -397,9 +416,9 @@ public class TreeNodeSub {
             ArrayList<TreeNode> tmpAboveLine = (ArrayList<TreeNode>) (aboveLine.clone());
             ArrayList<TreeNode> tmpBelowLine = (ArrayList<TreeNode>) (belowLine.clone());
 
-            double tmpValue = value.getNumcontent() * ((Unit)unit).getValue().getNumcontent();
-            tmpAboveLine.addAll(((Unit) unit).getAboveLine());
-            tmpBelowLine.addAll(((Unit) unit).getBelowLine());
+            double tmpValue = value.getNumcontent() / ((Unit)unit).getValue().getNumcontent();
+            tmpAboveLine.addAll(((Unit) unit).getBelowLine());
+            tmpBelowLine.addAll(((Unit) unit).getAboveLine());
             Token name = new Token(TokenType.NAME, "unknown", 0, 0);
             Token val = new Token(TokenType.NUMBER, tmpValue, 0, 0);
 
@@ -409,9 +428,8 @@ public class TreeNodeSub {
             ArrayList<TreeNode> tmpAboveLine = (ArrayList<TreeNode>) (aboveLine.clone());
             ArrayList<TreeNode> tmpBelowLine = (ArrayList<TreeNode>) (belowLine.clone());
 
-            double tmpValue = value.getNumcontent() * ((Unit)unit).getValue().getNumcontent();
-            tmpAboveLine.addAll(((Unit) unit).getAboveLine());
-            tmpBelowLine.addAll(((Unit) unit).getBelowLine());
+            double tmpValue = value.getNumcontent() + ((Unit)unit).getValue().getNumcontent();
+
             Token name = new Token(TokenType.NAME, "unknown", 0, 0);
             Token val = new Token(TokenType.NUMBER, tmpValue, 0, 0);
 
@@ -421,10 +439,31 @@ public class TreeNodeSub {
             ArrayList<TreeNode> tmpAboveLine = (ArrayList<TreeNode>) (aboveLine.clone());
             ArrayList<TreeNode> tmpBelowLine = (ArrayList<TreeNode>) (belowLine.clone());
 
-            double tmpValue = value.getNumcontent() * ((Unit)unit).getValue().getNumcontent();
-            tmpAboveLine.addAll(((Unit) unit).getAboveLine());
-            tmpBelowLine.addAll(((Unit) unit).getBelowLine());
+            double tmpValue = value.getNumcontent() - ((Unit)unit).getValue().getNumcontent();
+
             Token name = new Token(TokenType.NAME, "unknown", 0, 0);
+            Token val = new Token(TokenType.NUMBER, tmpValue, 0, 0);
+
+            return new Unit(val, name, tmpAboveLine, tmpBelowLine);
+        }
+        public Unit multiplyByNum(TreeNode num) throws InterpreterException {
+            ArrayList<TreeNode> tmpAboveLine = (ArrayList<TreeNode>) (aboveLine.clone());
+            ArrayList<TreeNode> tmpBelowLine = (ArrayList<TreeNode>) (belowLine.clone());
+
+            double tmpValue = value.getNumcontent() * ((Num)num).getValue().getNumcontent();
+
+            Token name = new Token(TokenType.NAME, unitType.getContent(), 0, 0);
+            Token val = new Token(TokenType.NUMBER, tmpValue, 0, 0);
+
+            return new Unit(val, name, tmpAboveLine, tmpBelowLine);
+        }
+        public Unit divideByNum(TreeNode num) throws InterpreterException {
+            ArrayList<TreeNode> tmpAboveLine = (ArrayList<TreeNode>) (aboveLine.clone());
+            ArrayList<TreeNode> tmpBelowLine = (ArrayList<TreeNode>) (belowLine.clone());
+
+            double tmpValue = value.getNumcontent() / ((Num)num).getValue().getNumcontent();
+
+            Token name = new Token(TokenType.NAME, unitType.getContent(), 0, 0);
             Token val = new Token(TokenType.NUMBER, tmpValue, 0, 0);
 
             return new Unit(val, name, tmpAboveLine, tmpBelowLine);
@@ -508,6 +547,11 @@ public class TreeNodeSub {
         {
             return (value.getNumcontent() <= comapared);
         }
+
+        @Override
+        public String toString() {
+            return "" + value.getNumcontent();
+        }
     }
 
     public static class StringVar implements TreeNode{
@@ -525,6 +569,20 @@ public class TreeNodeSub {
         public void accept(Interpreter visitor)
         {
             visitor.visit(this);
+        }
+
+        public boolean equals(String comapared)
+        {
+            return (value.getContent().equals(comapared));
+        }
+        public boolean notEquals(String comapared)
+        {
+            return (!value.getContent().equals(comapared));
+        }
+
+        @Override
+        public String toString() {
+            return "" + value.getNumcontent();
         }
     }
 

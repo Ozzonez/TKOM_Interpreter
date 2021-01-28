@@ -1,16 +1,13 @@
 package com.interpreter;
+import com.lexer.Token;
 import com.lexer.TokenType;
 import com.parser.TreeNode;
 import com.parser.TreeNodeSub;
 import com.sun.source.tree.Tree;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 
 public class Environment {
-    //HashMap<String, TreeNodeSub.Variable> globals = new HashMap<String, TreeNodeSub.Variable>(); // mapa zmiennych globalnych - potrzebna?
     ArrayDeque<CallContext> callStack = new ArrayDeque<>();
     ArrayList<TreeNode> funcDefs;
     Object lastResult;
@@ -19,8 +16,9 @@ public class Environment {
     ArrayList<TreeNode> parametersValues;
     HashMap<String, TreeNode> basicTypes = new HashMap<String, TreeNode>();
     ArrayList<TreeNodeSub.UnitComplexType> complexTypes = new ArrayList<>();
+    Boolean returnMet = false;
 
-    //sprawdzenie czy basic type po prostu sprawdzamy czy jest w mapie z basic typami
+
     public void loadFormulas(TreeNode unit) throws InterpreterException {
         TreeNode tmpType;
         if((tmpType = (basicTypes.get(((TreeNodeSub.Unit)unit).getUnitType().getContent()))) != null) {
@@ -29,9 +27,8 @@ public class Environment {
             ((TreeNodeSub.Unit)unit).setAboveLine(newAboveLine);
             return;
         }
-        else if(((TreeNodeSub.Unit) unit).getUnitType().getContent().equals("unknown")) // jak unknown niech nie ładuje
-            return; // nie trzeba ładować kiedy nie jest wpisywane z palca, za to trzeba check unit zrobić
-        //todo EEEEEEEEEEJ JEŚLI TYPE UNKNOWN TO NIECH TU WYWOŁUJE METODĘ CHECKFORKNOWNFORMULAS!!!!!!!!!
+        else if(((TreeNodeSub.Unit) unit).getUnitType().getContent().equals("unknown"))
+            return;
 
         for(TreeNodeSub.UnitComplexType i : complexTypes)
         {
@@ -46,22 +43,73 @@ public class Environment {
     }
 
     public void checkForKnownFormulas(TreeNode unit) throws InterpreterException {
-        ((TreeNodeSub.Unit)unit).shortenFractions();
+
+        ((TreeNodeSub.Unit)unit).shortenFractions(); //todo JESZCZE SHORTEN FRACTIONS DLA UNITCOMPLEXTYPÓW ENVA
+
+        ArrayList<TreeNode> currentAboveList = ((TreeNodeSub.Unit)(unit)).getAboveLine();
+        ArrayList<TreeNode> currentBelowList = ((TreeNodeSub.Unit)(unit)).getBelowLine();
+        int belowSize = currentBelowList.size();
+        int aboveSize = currentAboveList.size();
+        TreeNodeSub.UnitBasicType tmp;
+        boolean inCorrect = false;
+
+        if(belowSize == 0 && aboveSize == 1) {
+            if ((tmp = (TreeNodeSub.UnitBasicType) basicTypes.get(((TreeNodeSub.UnitBasicType)(currentAboveList.get(0))).getName().getContent())) == null) throw new InterpreterException("unknwn mistake");
+            ((TreeNodeSub.Unit)(unit)).setUnitType(new Token(TokenType.NAME, tmp.getName().getContent(), 0, 0));
+            return;
+        }
+
+
+        Collections.sort(currentAboveList, Comparator.comparing(p -> ((TreeNodeSub.UnitBasicType) p).getName().getContent()));
+        Collections.sort(currentBelowList, Comparator.comparing(p -> ((TreeNodeSub.UnitBasicType) p).getName().getContent()));
+
         for(TreeNode i : complexTypes)
         {
-            for(TreeNode j : ((TreeNodeSub.UnitComplexType)i).getAboveLine())
-            {
+            if(((TreeNodeSub.UnitComplexType)i).getAboveLine().size() == aboveSize &&
+                    ((TreeNodeSub.UnitComplexType)i).getBelowLine().size() == belowSize) {
+                for (int j = 0; j < aboveSize; j++) {
+                    if (!(((TreeNodeSub.UnitBasicType) currentAboveList.get(j)).getName().getContent().equals(((TreeNodeSub.UnitBasicType) ((TreeNodeSub.UnitComplexType) i).getAboveLine().get(j)).getName().getContent())))
+                        inCorrect = true;
+                }
+                for (int j = 0; j < aboveSize; j++) {
+                    if (!(((TreeNodeSub.UnitBasicType) currentBelowList.get(j)).getName().getContent().equals(((TreeNodeSub.UnitBasicType) ((TreeNodeSub.UnitComplexType) i).getBelowLine().get(j)).getName().getContent())))
+                        inCorrect = true;
+                }
 
+                if (!inCorrect)
+                    ((TreeNodeSub.Unit) (unit)).setUnitType(new Token(TokenType.NAME, ((TreeNodeSub.UnitComplexType) (i)).getName().getContent(), 0, 0));
+                inCorrect = false;
             }
         }
     }
-    //todo dwa razy to samo zadeklarowane to blad powinien?
+
     public void addNewBasicUnit(TreeNode basicUnit)
     {
         basicTypes.put(((TreeNodeSub.UnitBasicType)basicUnit).getName().getContent(), basicUnit);
     }
-    //todo dwa razy to samo zadeklarowano to blad powinien + skracać ułamki
+    //todo dwa razy to samo zadeklarowano to blad powinien
     public void addNewComplexType(TreeNodeSub.UnitComplexType ucx) throws InterpreterException {
+
+        for(TreeNode i : complexTypes)
+        {
+            if(ucx.getName().getContent().equals(((TreeNodeSub.UnitComplexType) i).getName().getContent())) throw new InterpreterException("Unit with this name already defined" + ucx.getName().getLine());
+        }
+
+        if(ucx.getAboveLine().size() > 0 && ucx.getBelowLine().size() > 0) {
+            for (Iterator<TreeNode> it = ucx.getAboveLine().iterator(); it.hasNext(); ) {
+                TreeNodeSub.UnitBasicType tmp = ((TreeNodeSub.UnitBasicType) (it.next()));
+                for (Iterator<TreeNode> it2 = ucx.getBelowLine().iterator(); it2.hasNext(); ) {
+                    if (tmp.getName().getContent().equals(((TreeNodeSub.UnitBasicType) (it2.next())).getName().getContent())) {
+                        it2.remove();
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+        }
+        Collections.sort(ucx.getBelowLine(), Comparator.comparing(p -> ((TreeNodeSub.UnitBasicType) p).getName().getContent()));
+        Collections.sort(ucx.getBelowLine(), Comparator.comparing(p -> ((TreeNodeSub.UnitBasicType) p).getName().getContent()));
+
         for(TreeNode i : ucx.getAboveLine())
         {
             if(basicTypes.get(((TreeNodeSub.UnitBasicType)i).getName().getContent()) == null) throw new InterpreterException("Niezadeklarowany typ podstawowy!");
@@ -70,8 +118,6 @@ public class Environment {
         {
             if(basicTypes.get(((TreeNodeSub.UnitBasicType)i).getName().getContent()) == null) throw new InterpreterException("Niezadeklarowany typ podstawowy!");
         }
-        ucx.getBelowLine().sort(null);
-        ucx.getAboveLine().sort(null);
         complexTypes.add(ucx);
     }
 
@@ -91,11 +137,11 @@ public class Environment {
         this.parameters = parameters;
     }
 
-    public void setLastResult(TreeNode lastResult) { //todo tutaj OBJECT
+    public void setLastResult(TreeNode lastResult) {
         this.lastResult = lastResult;
     }
 
-    public void setLastResult(Object lastResult) { //todo tymczasowo
+    public void setLastResult(Object lastResult) {
         this.lastResult = lastResult;
     }
 
@@ -105,10 +151,6 @@ public class Environment {
 
     public void setLastResultVar(TreeNode lastResultVar) {
         this.lastResultVar = lastResultVar;
-    }
-
-    public Object getLastResultVar() {
-        return lastResultVar;
     }
 
     public ArrayList<TreeNode> getFuncDefs() {
@@ -130,7 +172,6 @@ public class Environment {
         callStack.pop();
     }
 
-    // to musza dodawać wszystkie functionBlocki
     public void addVarContext()
     {
         assert callStack.peek() != null;
@@ -143,31 +184,25 @@ public class Environment {
         callStack.peek().deleteVarContext();
     }
 
-    // sprawdza czy istnieje i nadpisywać jeśli znalazła oraz rzucać błąd jeśli nie znalazła
     public void updateVarInCurrentBlockContext(TreeNode name, TreeNode value) throws InterpreterException {
         assert callStack.peek() != null;
         callStack.peek().updateVarInBlockContext(name, value);
     }
 
-    //dodaj nową zmienną (z wartością lub nullem) do var contextu aktualnego -- widoczna tylko w aktualnej mapie i niższych pochodnych
     public void declareVarInCurrentScope(TreeNode name, TreeNode value) throws InterpreterException {
         assert callStack.peek() != null;
         callStack.peek().declareVarInCurrentScope(name, value);
     }
 
-    //zwraca unit, stringvar, albo num
     public TreeNode getVarValue(TreeNode name) throws InterpreterException {
         return callStack.peek().getVarValue(name);
     }
 
+    public Boolean getReturnMet() {
+        return returnMet;
+    }
 
-
-
-    //todo getVariable(name)
-    //todo makeCall(...)
-    //todo deleteCall
-    //todo makeVariable(name, type)
-    //todo makeBlockContext
-    //todo deleteBlockContext(
-
+    public void setReturnMet(Boolean returnMet) {
+        this.returnMet = returnMet;
+    }
 }

@@ -126,7 +126,7 @@ public class Lexer {
         TokenType tmp;
 
         tmp = TokenType.QUOTE;
-        word = word + character;
+        //word = word + character;
         character = cl.getNextSymbol();
 
         while(character != '\"' && character != '\r' && character != '\n' && !isEOF(character))
@@ -137,7 +137,7 @@ public class Lexer {
 
         if(character == '\"')
         {
-            word = word + character;
+            //word = word + character;
             x = x + word.length();
             nextCharacter = cl.getNextSymbol();
         }

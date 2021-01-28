@@ -108,15 +108,15 @@ public class Parser {
         if ((statement = TryParseFunctionCall()) != null) {
             return statement;
         }
-        if ((statement = TryParseAssignmentTryParseStatement()) != null) {
+        if ((statement = TryParseAssignmentStatement()) != null) {
             return statement;
-        } else if ((statement = TryParseVarDeclarationTryParseStatement()) != null) {
+        } else if ((statement = TryParseVarDeclarationStatement()) != null) {
             return statement;
-        } else if ((statement = TryParseIfDeclarationTryParseStatement()) != null) {
+        } else if ((statement = TryParseIfDeclarationStatement()) != null) {
             return statement;
-        } else if ((statement = TryParseWhileTryParseStatement()) != null) {
+        } else if ((statement = TryParseWhileStatement()) != null) {
             return statement;
-        } else if ((statement = TryParseReturnTryParseStatement()) != null) {
+        } else if ((statement = TryParseReturnStatement()) != null) {
             return statement;
         } else if ((statement = TryParsePrintStatement()) != null) {
             return statement;
@@ -139,12 +139,6 @@ public class Parser {
 
             return new UnitBasicType(unitType);
         }
-//        unitType = presentToken;
-//        proceed(TokenType.NAME);
-//        TreeNode formula = TryParseMultiplicativeFormula();
-//
-//        return new UnitComplexType(unitType, formula);
-
         return TryParseMultiplicativeFormula();
     }
 
@@ -153,7 +147,7 @@ public class Parser {
             return null;
         proceed(TokenType.PRINT);
 
-        TreeNode content = TryParseAdditiveTryParseExpression();
+        TreeNode content = TryParseAdditiveExpression();
 
         return new PrintStatement(content);
     }
@@ -172,11 +166,11 @@ public class Parser {
             return new FunctionCall(funcName, arguments);
         }
 
-        arguments.add(TryParseAdditiveTryParseExpression());
+        arguments.add(TryParseAdditiveExpression());
 
         while (presentToken.getType() == TokenType.COMMA) {
             proceed(TokenType.COMMA);
-            arguments.add(TryParseAdditiveTryParseExpression());
+            arguments.add(TryParseAdditiveExpression());
         }
 
         proceed(TokenType.RIGHT_BRACKET);
@@ -184,7 +178,7 @@ public class Parser {
     }
 
 
-    private TreeNode TryParseAssignmentTryParseStatement() throws ParserException, LexerException {
+    private TreeNode TryParseAssignmentStatement() throws ParserException, LexerException {
         if (presentToken.getType() != TokenType.NAME)
             return null;
 
@@ -192,12 +186,12 @@ public class Parser {
 
         TreeNode var = TryParseVariable();
         proceed(TokenType.ASSIGNMENT_OP);
-        TreeNode additiveExp = TryParseAdditiveTryParseExpression();
+        TreeNode additiveExp = TryParseAdditiveExpression();
 
         return new AssignStatement(var, additiveExp);
     }
 
-    private TreeNode TryParseVarDeclarationTryParseStatement() throws ParserException, LexerException {
+    private TreeNode TryParseVarDeclarationStatement() throws ParserException, LexerException {
         if (presentToken.getType() != TokenType.VAR)
             return null;
 
@@ -208,13 +202,13 @@ public class Parser {
 
         if (presentToken.getType() == TokenType.ASSIGNMENT_OP) {
             proceed(TokenType.ASSIGNMENT_OP);
-            additiveExp = TryParseAdditiveTryParseExpression();
+            additiveExp = TryParseAdditiveExpression();
         }
 
         return new VarDeclaration(name, additiveExp);
     }
 
-    private TreeNode TryParseIfDeclarationTryParseStatement() throws ParserException, LexerException {
+    private TreeNode TryParseIfDeclarationStatement() throws ParserException, LexerException {
         if (presentToken.getType() != TokenType.IF)
             return null;
 
@@ -233,7 +227,7 @@ public class Parser {
         return new IfStatement(condition, instructionsBlockIfTrue, instructionsBlockIfFalse);
     }
 
-    private TreeNode TryParseWhileTryParseStatement() throws ParserException, LexerException {
+    private TreeNode TryParseWhileStatement() throws ParserException, LexerException {
         if (presentToken.getType() != TokenType.WHILE)
             return null;
 
@@ -247,13 +241,13 @@ public class Parser {
         return new WhileStatement(condition, whileBody);
     }
 
-    private TreeNode TryParseReturnTryParseStatement() throws ParserException, LexerException {
+    private TreeNode TryParseReturnStatement() throws ParserException, LexerException {
         if (presentToken.getType() != TokenType.RETURN)
             return null;
 
         proceed(TokenType.RETURN);
 
-        return new ReturnStatement(TryParseAdditiveTryParseExpression());
+        return new ReturnStatement(TryParseAdditiveExpression());
     }
 
     private TreeNode tryParseCondition() throws ParserException, LexerException {
@@ -281,9 +275,9 @@ public class Parser {
     private TreeNode tryParseEqualityCondition() throws ParserException, LexerException {
         TreeNode node = tryParseRelationalCondition();
 
-        while (presentToken.getType() == TokenType.EQUAL_OP) {
+        while (presentToken.getType() == TokenType.EQUAL_OP || presentToken.getType() == TokenType.NOT_EQUAL_OP) {
             Token token = presentToken;
-            proceed(TokenType.EQUAL_OP);
+            proceed(token.getType());
             node = new BinaryConditionOperator(node, token, tryParseRelationalCondition());
         }
         return node;
@@ -309,26 +303,26 @@ public class Parser {
             proceed(TokenType.RIGHT_BRACKET);
             return node;
         } else {
-            TreeNode node = TryParseAdditiveTryParseExpression();
+            TreeNode node = TryParseAdditiveExpression();
             return node;
         }
     }
 
-    private TreeNode TryParseAdditiveTryParseExpression() throws ParserException, LexerException {
+    private TreeNode TryParseAdditiveExpression() throws ParserException, LexerException {
         TreeNode node = null;
 
-        node = TryParseMultiplicativeTryParseExpression();
+        node = TryParseMultiplicativeExpression();
 
         while (presentToken.getType() == TokenType.ADDITIVE_OP || presentToken.getType() == TokenType.ADDITIVE_OP)
         {
             Token operator = presentToken;
             proceed(operator.getType());
-            node = new BinOperator(node, operator, TryParseMultiplicativeTryParseExpression());
+            node = new BinOperator(node, operator, TryParseMultiplicativeExpression());
         }
         return node; // return whole additiveExpression
     }
 
-    private TreeNode TryParseMultiplicativeTryParseExpression() throws ParserException, LexerException {
+    private TreeNode TryParseMultiplicativeExpression() throws ParserException, LexerException {
         TreeNode node = null;
 
         node = TryParseExpression();
@@ -356,7 +350,7 @@ public class Parser {
             return new StringVar(token);
         } else if (token.getType() == TokenType.LEFT_BRACKET) {
             proceed(TokenType.LEFT_BRACKET);
-            node = TryParseAdditiveTryParseExpression();
+            node = TryParseAdditiveExpression();
             proceed(TokenType.RIGHT_BRACKET);
             return node;
         } else if ((node = TryParseFunctionCall()) != null) {
@@ -371,11 +365,6 @@ public class Parser {
 
         proceed(TokenType.LEFT_SQ_BRACKET);
         Token value = presentToken;
-
-
-        //new Num(value); zamiast Unit(value, unittype) bedzie Unit(new Num(value), unittype)
-
-
         proceed(TokenType.NUMBER);
         Token unitType = presentToken;
         proceed(TokenType.NAME);
@@ -391,29 +380,13 @@ public class Parser {
     }
 
     private TreeNode TryParseMultiplicativeFormula() throws ParserException, LexerException { //tak naprawdę tryParseComplexType
-//        TreeNode node = null;
-//
-//        node = TryParseExpressionFormula();
-//
-//        while (presentToken.getType() == TokenType.MULTIPLICATIVE_OP || presentToken.getType() == TokenType.DIVISION_OP) {
-//            Token operator = presentToken;
-//            proceed(operator.getType());
-//            node = new BinOperator(node, operator, TryParseExpressionFormula());
-//        }
-//        return node;
-//
-
-
         Token unitName = presentToken;
         proceed(TokenType.NAME);
-
-
-
 
         ArrayList<TreeNode> aboveLine = new ArrayList<>();
         ArrayList<TreeNode> belowLine = new ArrayList<>();
         TreeNode unit = null;
-        if(presentToken.getType() == TokenType.DIVISION_OP) // samo dzielenie
+        if(presentToken.getType() == TokenType.DIVISION_OP)
         {
             proceed(TokenType.DIVISION_OP);
             unit = tryParseUnitBasicType();
@@ -428,13 +401,14 @@ public class Parser {
         {
             unit = tryParseUnitBasicType();
             aboveLine.add(unit);
-            while(presentToken.getType() != TokenType.DIVISION_OP)
+            while(presentToken.getType() != TokenType.DIVISION_OP && presentToken.getType() != TokenType.SEMICOLON)
             {
                 proceed(TokenType.MULTIPLICATIVE_OP);
                 unit = tryParseUnitBasicType();
                 aboveLine.add(unit);
             }
-            proceed(TokenType.DIVISION_OP);
+            if(presentToken.getType() != TokenType.SEMICOLON)
+                proceed(TokenType.DIVISION_OP);
             if(presentToken.getType() != TokenType.SEMICOLON) {
                 unit = tryParseUnitBasicType();
                 belowLine.add(unit);
@@ -447,20 +421,6 @@ public class Parser {
         }
         return new UnitComplexType(unitName, aboveLine, belowLine);
     }
-
-//    private TreeNode TryParseExpressionFormula() throws ParserException, LexerException {
-//        Token token = presentToken;
-//        TreeNode node = null;
-//
-//        if (token.getType() == TokenType.LEFT_BRACKET) {
-//            proceed(TokenType.LEFT_BRACKET);
-//            node = TryParseMultiplicativeFormula();
-//            proceed(TokenType.RIGHT_BRACKET);
-//            return node;
-//        }
-//        return tryParseUnitBasicType();
-//    }
-
     private TreeNode tryParseUnitBasicType() throws ParserException, LexerException {
         TreeNode var = new UnitBasicType(presentToken);
         proceed(TokenType.NAME);

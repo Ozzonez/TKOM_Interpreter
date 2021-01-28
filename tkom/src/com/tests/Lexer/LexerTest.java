@@ -312,7 +312,7 @@ class LexerTest {
         Lexer lexer = new Lexer("\"test test \"");
         Token token = lexer.buildToken();
         assertEquals(TokenType.QUOTE, token.getType());
-        assertEquals("\"test test \"", token.getContent());
+        assertEquals("test test ", token.getContent());
 
         Lexer lexer2 = new Lexer("\"test test \r \n test");
         Exception exception = assertThrows(LexerException.class, lexer2::buildToken);

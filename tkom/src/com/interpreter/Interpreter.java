@@ -27,13 +27,13 @@ public class Interpreter{
             if(((TreeNodeSub.FunctionDef) i).getName().getContent().equals(name))
                 return i;
         }
-        throw new InterpreterException("Function not declared!");
+        throw new InterpreterException("Function " + name + " not declared!");
     }
 
     public void visit(TreeNodeSub.Program program) throws InterpreterException {
         env = new Environment(program.getFunctions());
-        TreeNode main = getFunc("main"); //todo błąd nie znaleziono maina
-        main.accept(this); // git tak? main wskazuje na rekord z nazwą funkcji main w array, która jest polem Programu
+        TreeNode main = getFunc("main");
+        main.accept(this);
     }
 
     public void visit(TreeNodeSub.FunctionDef fd) throws InterpreterException {
@@ -45,49 +45,52 @@ public class Interpreter{
             if (env.getParameters().size() != env.getParametersValues().size())
                 throw new InterpreterException("Expected: " + env.getParameters().size() + "arguments but got: " + env.getParametersValues().size());
         }
+        env.addVarContext();
+
+        int j = 0;
+        ArrayList<TreeNode> parametersValues = env.getParametersValues();
+        if(env.getParameters() != null)
+            for(TreeNode i : env.getParameters())
+            {
+                env.declareVarInCurrentScope(i, parametersValues.get(j));
+                j++;
+            }
+
         fd.getFunctionBlock().accept(this);
+        env.setReturnMet(false);
         env.deleteBlockContext();
     }
 
-    //TODO OBIEKTU VARIABLE NIE TRAKTUJEMY JAKO PRAWDZIWE VAR - TRZEBA WZIĄĆ VARIABLE Z VALUE Z CURRENT VAR CONTEXT
-    public void visit(TreeNodeSub.FunctionCall fd) throws InterpreterException// przekazac argumenty z funcCalla do zmiennych lokalnych w nowym callstacku
+    public void visit(TreeNodeSub.FunctionCall fd) throws InterpreterException
     {
-        //tutaj zapisanie wartości tych parametrów po kolei do Array parameters
         ArrayList<TreeNode> tmp = new ArrayList<>();
         for(TreeNode i : fd.getArguments())
         {
             if(i instanceof TreeNodeSub.Variable || i instanceof TreeNodeSub.FunctionCall)
             {
-                i.accept(this); // po wyjściu stąd w lastResult będzie wartość vara albo functioncalla
-
+                i.accept(this);
                 tmp.add((TreeNode)env.getLastResult());
             }
-            else // będzie num, unit, albo string bez ifa
+            else
                 tmp.add(i);
         }
         env.setParametersValues(tmp);
-        getFunc(fd.getName().getContent()).accept(this); // wyszukuje funkcję w arrayu funkcji
+        getFunc(fd.getName().getContent()).accept(this);
     }
 
     public void visit(TreeNodeSub.FunctionBlock fb) throws InterpreterException {
         env.addVarContext();
-        int j = 0;
-        ArrayList<TreeNode> parametersValues = env.getParametersValues();
-        if(env.getParameters() != null)
-        for(TreeNode i : env.getParameters()) //todo ZLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-        {
-            env.declareVarInCurrentScope(i, parametersValues.get(j));
-            j++;
-        }
 
         for(TreeNode i : fb.getStatements()){
             if(i instanceof TreeNodeSub.ReturnStatement)
             {
                 i.accept(this);
-                env.deleteVarContext(); //todo to potrzebne????
-                return;
+                env.setReturnMet(true);
+                break;
             }
             i.accept(this);
+            if(env.getReturnMet())
+                break;
         }
         env.deleteVarContext();
     }
@@ -98,7 +101,7 @@ public class Interpreter{
 
     public void visit(TreeNodeSub.IfStatement ifs) throws InterpreterException {
         ifs.getCondition().accept(this);
-        if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("105"); //todo zmien nwm co tu miałoby wyrzucać, już wcześniej rzuci błąd
+        if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("Not a boolean if condition");
 
         if((Boolean) (env.getLastResult()))
             ifs.getInstructionBlockIfTrue().accept(this);
@@ -108,13 +111,15 @@ public class Interpreter{
 
     public void visit(TreeNodeSub.WhileStatement ws) throws InterpreterException {
         ws.getCondition().accept(this);
-        if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("115"); //todo tu może być błąd typu while(1) albo while(x + 2) coś teges
+        if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("Not a boolean while condition");
 
         while((Boolean) (env.getLastResult()))
         {
-            ws.getWhileBody().accept(this); //całe nowe body się tworzy co iterację, czyli w każdej iteracji nowy var context tworzymy?
+            ws.getWhileBody().accept(this);
+            if(env.getReturnMet())
+                break;
             ws.getCondition().accept(this);
-            if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("121"); //todo to potrzebne????
+            if(!(env.getLastResult() instanceof Boolean)) throw new InterpreterException("Not a boolean while condition");
         }
     }
 
@@ -129,9 +134,11 @@ public class Interpreter{
     public void visit(TreeNodeSub.VarDeclaration vd) throws InterpreterException {
         TreeNode var = vd.getName();
         if(vd.getValue() != null)
-        vd.getValue().accept(this); // ustawi lastResult na num, string lub unit
+        vd.getValue().accept(this);
 
-        if(!((env.getLastResult() instanceof TreeNodeSub.Unit) || (env.getLastResult() instanceof TreeNodeSub.Num) || (env.getLastResult() instanceof TreeNodeSub.StringVar) || env.getLastResult() == null)) throw new InterpreterException("142");
+        if(!((env.getLastResult() instanceof TreeNodeSub.Unit) || (env.getLastResult() instanceof TreeNodeSub.Num) ||
+                (env.getLastResult() instanceof TreeNodeSub.StringVar) || env.getLastResult() == null))
+            throw new InterpreterException("Wrong variable declaration");
 
         if(vd.getValue() != null)
             env.declareVarInCurrentScope(var, (TreeNode)env.getLastResult());
@@ -140,7 +147,9 @@ public class Interpreter{
 
     public void visit(TreeNodeSub.PrintStatement pt) throws InterpreterException {
         pt.getContent().accept(this);
-        //todo sprawdzać co jest w lastResult i rzucać błąd jeśli źle ----- toString zaimplementować
+        if(!((env.getLastResult() instanceof TreeNodeSub.Unit) || (env.getLastResult() instanceof TreeNodeSub.Num) ||
+                (env.getLastResult() instanceof TreeNodeSub.StringVar) || env.getLastResult() == null))
+            throw new InterpreterException("Wrong print statement use");
         System.out.println(env.getLastResult());
     }
 
@@ -152,7 +161,6 @@ public class Interpreter{
         env.addNewComplexType(uct);
     }
 
-    //wystarczy obliczać lewy z prawym, już parser zajął się pierwszeństwem wykonania
     public void visit(TreeNodeSub.BinOperator bo) throws InterpreterException {
         bo.getLeftExp().accept(this);
         TreeNode tmpLeft = (TreeNode)env.getLastResult();
@@ -170,11 +178,11 @@ public class Interpreter{
                 double result = ((TreeNodeSub.Num)tmpLeft).getValue().getNumcontent() / ((TreeNodeSub.Num)tmpRight).getValue().getNumcontent();
                 env.setLastResult(new TreeNodeSub.Num(new Token(TokenType.NUMBER, result, 0, 0)));
             }
-            else  if(operator.getContent().equals("-")) { //todo dodać w lexerze rozróżnianie - i +
+            else  if(operator.getContent().equals("-")) {
                 double result = ((TreeNodeSub.Num)tmpLeft).getValue().getNumcontent() - ((TreeNodeSub.Num)tmpRight).getValue().getNumcontent();
                 env.setLastResult(new TreeNodeSub.Num(new Token(TokenType.NUMBER, result, 0, 0)));
             }
-            else  if(operator.getContent().equals("+")) { //todo dodać w lexerze rozróżnianie - i +
+            else  if(operator.getContent().equals("+")) {
                 double result = ((TreeNodeSub.Num)tmpLeft).getValue().getNumcontent() + ((TreeNodeSub.Num)tmpRight).getValue().getNumcontent();
                 env.setLastResult(new TreeNodeSub.Num(new Token(TokenType.NUMBER, result, 0, 0)));
             }
@@ -189,17 +197,50 @@ public class Interpreter{
         }
         else if(tmpLeft instanceof TreeNodeSub.Unit && tmpRight instanceof TreeNodeSub.Unit)
         {
-            if(operator.getContent().equals("*"))
+            if(operator.getContent().equals("*")) {
                 env.setLastResult(((TreeNodeSub.Unit) tmpLeft).multiply(tmpRight));
-            //todo tutaj call env.checkForKnownTypes
+                env.checkForKnownFormulas((TreeNode) env.getLastResult());
+            }
+            else if(operator.getContent().equals("/")) {
+                env.setLastResult(((TreeNodeSub.Unit) tmpLeft).divide(tmpRight));
+                env.checkForKnownFormulas((TreeNode) env.getLastResult());
+            }
+            else if(operator.getContent().equals("+")) {
+                if(!((TreeNodeSub.Unit) tmpLeft).getUnitType().getContent().equals(((TreeNodeSub.Unit) tmpRight).getUnitType().getContent()))
+                    throw new InterpreterException("Cannot add units of two different types at" + operator.getLine());
+                env.setLastResult(((TreeNodeSub.Unit) tmpLeft).add(tmpRight));
+                env.checkForKnownFormulas((TreeNode) env.getLastResult());
+            }
+            else if(operator.getContent().equals("-")) {
+                if(!((TreeNodeSub.Unit) tmpLeft).getUnitType().getContent().equals(((TreeNodeSub.Unit) tmpRight).getUnitType().getContent()))
+                    throw new InterpreterException("Cannot subtract units of two different types at" + operator.getLine());
+                env.setLastResult(((TreeNodeSub.Unit) tmpLeft).subtract(tmpRight));
+                env.checkForKnownFormulas((TreeNode) env.getLastResult());
+            }
         }
         else if(tmpLeft instanceof TreeNodeSub.Unit && tmpRight instanceof TreeNodeSub.Num)
         {
-            throw new InterpreterException("NOT IMPLEMENTED" + operator.getLine());
+            if(operator.getContent().equals("*")) {
+                env.setLastResult(((TreeNodeSub.Unit) tmpLeft).multiplyByNum(tmpRight));
+                env.checkForKnownFormulas((TreeNode) env.getLastResult());
+            }
+            else if(operator.getContent().equals("/")) {
+                env.setLastResult(((TreeNodeSub.Unit) tmpLeft).divideByNum(tmpRight));
+                env.checkForKnownFormulas((TreeNode) env.getLastResult());
+            }
+            else throw new InterpreterException("Addition and subtraction of unit type and number type forbidden" + operator.getLine());
         }
         else if(tmpLeft instanceof TreeNodeSub.Num && tmpRight instanceof TreeNodeSub.Unit)
         {
-            throw new InterpreterException("NOT IMPLEMENTED" + operator.getLine());
+            if(operator.getContent().equals("*")) {
+                env.setLastResult(((TreeNodeSub.Unit) tmpRight).multiplyByNum(tmpLeft));
+                env.checkForKnownFormulas((TreeNode) env.getLastResult());
+            }
+            else if(operator.getContent().equals("/")) {
+                env.setLastResult(((TreeNodeSub.Unit) tmpRight).divideByNum(tmpLeft));
+                env.checkForKnownFormulas((TreeNode) env.getLastResult());
+            }
+            else throw new InterpreterException("Addition and subtraction of unit type and number type forbidden" + operator.getLine());
         }
         else throw new InterpreterException("Forbidden operation at" + operator.getLine());
     }
@@ -220,7 +261,7 @@ public class Interpreter{
                 env.setLastResult((Boolean)leftExp == (Boolean) rightExp);
             else if(bco.getOperator().getType() == TokenType.NOT_EQUAL_OP)
                 env.setLastResult((Boolean)leftExp != (Boolean) rightExp);
-            else throw new InterpreterException("Forbidden logical operation!");
+            else throw new InterpreterException("Forbidden logical operation at" + bco.getOperator().getLine());
         }
         else if(leftExp instanceof TreeNodeSub.Num && rightExp instanceof TreeNodeSub.Num)
         {
@@ -238,14 +279,39 @@ public class Interpreter{
                 env.setLastResult(left.smaller(right));
             else if(bco.getOperator().getType() == TokenType.SMALLER_EQUAL_OP)
                 env.setLastResult(left.smallerEqual(right));
+            else throw new InterpreterException("Forbidden logical operation at" + bco.getOperator().getLine());
         }
         else if(leftExp instanceof TreeNodeSub.StringVar && rightExp instanceof TreeNodeSub.StringVar)
         {
-            throw new InterpreterException("String operations not implemented yet");
+            TreeNodeSub.StringVar left = ((TreeNodeSub.StringVar) leftExp);
+            String right = ((TreeNodeSub.StringVar) rightExp).getValue().getContent();
+            if(bco.getOperator().getType() == TokenType.EQUAL_OP)
+                env.setLastResult(left.equals(right));
+            else if(bco.getOperator().getType() == TokenType.NOT_EQUAL_OP)
+                env.setLastResult(left.notEquals(right));
+            else throw new InterpreterException(bco.getOperator().getContent() + " Cannot be applied to strings at" +  bco.getOperator().getLine());
         }
         else if(leftExp instanceof TreeNodeSub.Unit && rightExp instanceof TreeNodeSub.Unit)
         {
-            throw new InterpreterException("NOT IMPLEMENTED!!!");
+            if(!((TreeNodeSub.Unit) leftExp).getUnitType().getContent().equals(((TreeNodeSub.Unit) rightExp).getUnitType().getContent()))
+                throw new InterpreterException("Cannot compare units of two different types at" + bco.getOperator().getLine());
+
+            TreeNodeSub.Unit left = (TreeNodeSub.Unit) leftExp;
+            TreeNodeSub.Unit right = (TreeNodeSub.Unit) rightExp;
+
+            if(bco.getOperator().getType() == TokenType.EQUAL_OP)
+                env.setLastResult(left.equals(right));
+            else if(bco.getOperator().getType() == TokenType.NOT_EQUAL_OP)
+                env.setLastResult(left.notEquals(right));
+            else if(bco.getOperator().getType() == TokenType.GREATER__OP)
+                env.setLastResult(left.greater(right));
+            else if(bco.getOperator().getType() == TokenType.GREATER_EQUAL_OP)
+                env.setLastResult(left.greaterEqual(right));
+            else if(bco.getOperator().getType() == TokenType.SMALLER__OP)
+                env.setLastResult(left.smaller(right));
+            else if(bco.getOperator().getType() == TokenType.SMALLER_EQUAL_OP)
+                env.setLastResult(left.smallerEqual(right));
+            else throw new InterpreterException("Forbidden logical operation at" + bco.getOperator().getLine());
         }
         else throw new InterpreterException("Forbidden logical operation! Comparison of two different types at" + bco.getOperator().getLine());
     }

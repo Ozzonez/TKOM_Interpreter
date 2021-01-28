@@ -5,4 +5,9 @@ public class LexerException extends Exception{
     {
         super(msg);
     }
+
+    @Override
+    public String toString() {
+        return this.getMessage();
+    }
 }
